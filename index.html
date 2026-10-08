@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Periodic Flashcards — Học nhanh 5 nguyên tố</title>
-  <meta name="description" content="Flashcard học Hóa học: Hydrogen, Carbon, Oxygen, Sodium, Chlorine. Chạy 100% trên GitHub Pages." />
+  <meta name="description" content="Flashcard học Hóa học: Hydrogen, Carbon, Oxygen, Sodium, Chlorine. Mượt, âm thanh xịn, quiz Đúng/Sai, tài khoản local." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Nền gradient trang trí -->
   <div class="bg-blob blob-1"></div>
   <div class="bg-blob blob-2"></div>
   <div class="bg-blob blob-3"></div>
@@ -17,33 +16,43 @@
     <div class="topbar-inner">
       <div class="logo">⚗️ <span>Periodic Flashcards</span></div>
       <div class="top-actions">
-        <button id="soundBtn" class="icon-btn" title="Bật / tắt âm thanh" aria-label="Bật tắt âm thanh">🔊</button>
-        <button id="themeBtn" class="icon-btn" title="Đổi Dark / Light mode" aria-label="Đổi giao diện">🌙</button>
+        <div id="userChip" class="user-chip hidden">
+          <span id="userAvatar" class="avatar">😀</span>
+          <span id="userName">bạn</span>
+          <button id="logoutBtn" class="link-btn" title="Đăng xuất">⎋</button>
+        </div>
+        <button id="authBtn" class="btn btn-ghost btn-sm">👤 Tài khoản</button>
+        <button id="soundBtn" class="icon-btn" title="Bật / tắt âm thanh">🔊</button>
+        <button id="themeBtn" class="icon-btn" title="Đổi Dark / Light mode">🌙</button>
       </div>
     </div>
   </header>
 
   <main class="container">
-    <!-- ============ HERO / TRANG CHỦ ============ -->
-    <section id="homeSection" class="hero glass">
-      <div class="hero-badge">HÓA HỌC • LỚP 8–10 • GITHUB PAGES READY</div>
+    <!-- TRANG CHỦ -->
+    <section id="homeSection" class="hero glass section-enter">
+      <div class="hero-badge">HÓA HỌC • MƯỢT • ÂM THANH XỊN • CÓ TÀI KHOẢN</div>
       <h1>Periodic Flashcards</h1>
       <p class="subtitle">Học nhanh 5 nguyên tố trong bảng tuần hoàn</p>
-      <button id="startBtn" class="btn btn-primary btn-lg">▶ Bắt đầu học</button>
+      <div id="welcomeBox" class="welcome hidden"></div>
+      <div class="hero-btns">
+        <button id="startBtn" class="btn btn-primary btn-lg ripple-host">▶ Bắt đầu học</button>
+        <button id="homeQuizBtn" class="btn btn-secondary btn-lg ripple-host">📝 Kiểm tra ngay</button>
+      </div>
 
       <h2 class="grid-title">5 nguyên tố hôm nay</h2>
       <p class="grid-hint">Nhấn vào từng ô để học ngay nguyên tố đó</p>
       <div id="elementGrid" class="element-grid"></div>
     </section>
 
-    <!-- ============ FLASHCARD ============ -->
+    <!-- FLASHCARD -->
     <section id="studySection" class="study glass hidden">
       <div class="study-head">
         <h2>📖 Flashcard</h2>
         <div class="study-tools">
-          <button id="shuffleBtn" class="btn btn-ghost">🔀 Trộn thẻ</button>
-          <button id="quizBtn" class="btn btn-ghost">📝 Kiểm tra</button>
-          <button id="homeBtn" class="btn btn-ghost">🏠 Trang chủ</button>
+          <button id="shuffleBtn" class="btn btn-ghost ripple-host">🔀 Trộn thẻ</button>
+          <button id="quizBtn" class="btn btn-ghost ripple-host">📝 Kiểm tra</button>
+          <button id="homeBtn" class="btn btn-ghost ripple-host">🏠 Trang chủ</button>
         </div>
       </div>
 
@@ -52,18 +61,15 @@
         <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
       </div>
 
-      <!-- Thẻ lật 3D -->
       <div class="flashcard-scene">
         <div id="flashcard" class="flashcard" role="button" tabindex="0" aria-label="Flashcard, nhấn để lật">
-          <div class="flashcard-inner">
-            <!-- Mặt trước -->
+          <div class="flashcard-inner" id="flashcardInner">
             <div class="flashcard-face flashcard-front">
               <div id="cardNumberFront" class="card-number">1</div>
               <div id="cardSymbolFront" class="card-symbol">H</div>
               <div id="cardNameFront" class="card-name">Hydrogen</div>
               <div class="card-hint">Nhấn vào thẻ để xem thông tin</div>
             </div>
-            <!-- Mặt sau -->
             <div class="flashcard-face flashcard-back">
               <h3 id="cardNameBack">Hydrogen</h3>
               <div id="cardSymbolBack" class="back-symbol">H</div>
@@ -79,21 +85,27 @@
           </div>
         </div>
       </div>
+      <p class="swipe-hint">👈 Vuốt / dùng ← → để chuyển thẻ • Nhấn thẻ để lật</p>
 
       <div class="controls">
-        <button id="prevBtn" class="btn btn-secondary">← Trước</button>
-        <button id="flipBtn" class="btn btn-primary">🔄 Lật thẻ</button>
-        <button id="nextBtn" class="btn btn-secondary">Tiếp →</button>
+        <button id="prevBtn" class="btn btn-secondary ripple-host">← Trước</button>
+        <button id="flipBtn" class="btn btn-primary ripple-host">🔄 Lật thẻ</button>
+        <button id="nextBtn" class="btn btn-secondary ripple-host">Tiếp →</button>
       </div>
     </section>
 
-    <!-- ============ QUIZ ============ -->
+    <!-- QUIZ -->
     <section id="quizSection" class="quiz glass hidden">
       <div class="study-head">
-        <h2>📝 Kiểm tra nhanh</h2>
+        <h2>📝 Kiểm tra</h2>
         <div class="study-tools">
           <button id="backToStudyBtn" class="btn btn-ghost">📖 Về học thẻ</button>
         </div>
+      </div>
+
+      <div class="quiz-tabs">
+        <button id="tabMcq" class="tab active">🔤 Trắc nghiệm 4 đáp án</button>
+        <button id="tabTf" class="tab">✅❌ Đúng / Sai</button>
       </div>
 
       <div id="quizBox">
@@ -108,17 +120,38 @@
       <div id="quizResult" class="quiz-result hidden">
         <div class="score-big" id="quizScore">4/5</div>
         <p id="quizMessage"></p>
+        <p id="bestScore" class="best-score"></p>
         <div class="controls">
-          <button id="quizRetryBtn" class="btn btn-primary">↺ Làm lại</button>
-          <button id="quizStudyBtn" class="btn btn-secondary">📖 Ôn lại thẻ</button>
+          <button id="quizRetryBtn" class="btn btn-primary ripple-host">↺ Làm lại</button>
+          <button id="quizStudyBtn" class="btn btn-secondary ripple-host">📖 Ôn lại thẻ</button>
         </div>
       </div>
     </section>
 
     <footer class="footer">
-      <p>Made with 💙 for học sinh yêu Hóa học • HTML + CSS + JS thuần • Chạy tốt trên GitHub Pages</p>
+      <p>Made with 💙 • HTML + CSS + JS thuần • Tài khoản lưu trên máy bạn (localStorage, demo học tập)</p>
     </footer>
   </main>
+
+  <!-- MODAL TÀI KHOẢN -->
+  <div id="authOverlay" class="overlay hidden">
+    <div class="auth-card glass">
+      <button id="authClose" class="auth-close">✕</button>
+      <h2>👤 Tài khoản học tập</h2>
+      <p class="auth-sub">Đăng ký / đăng nhập để lưu điểm cao nhất trên máy này.<br>Không cần backend, không gửi đi đâu.</p>
+      <div class="quiz-tabs">
+        <button id="tabLogin" class="tab active">Đăng nhập</button>
+        <button id="tabRegister" class="tab">Đăng ký</button>
+      </div>
+      <label>Tên đăng nhập</label>
+      <input id="authUser" type="text" placeholder="vd: hoa_hoc_9a" autocomplete="username" maxlength="24" />
+      <label>Mật khẩu</label>
+      <input id="authPass" type="password" placeholder="ít nhất 4 ký tự" autocomplete="current-password" />
+      <div id="authError" class="auth-error"></div>
+      <button id="authSubmit" class="btn btn-primary" style="width:100%">Đăng nhập</button>
+      <p class="auth-note">⚠️ Demo frontend: mật khẩu chỉ băm nhẹ + lưu localStorage, không dùng cho tài khoản thật.</p>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
