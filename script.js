@@ -1,243 +1,475 @@
-/* ============ CHEMFLASH — sổ tay lab, sticker, chunky EdTech ============ */
-:root{
-  --paper:#F6F1E4; --card:#FFFDF6; --ink:#26314B; --muted:#7A8199;
-  --line:#26314B; --shadow:5px 5px 0 var(--ink);
-  --yellow:#FFD23F; --blue:#3FA7FF; --green:#3ECF8E; --pink:#FF7BAC; --orange:#FF9F45; --purple:#9B7BFF;
-  --grid:rgba(38,49,75,.07);
-  --r:20px; --spring:cubic-bezier(.34,1.45,.4,1); --smooth:cubic-bezier(.22,.9,.32,1);
+/* CHEMFLASH v4 — sổ tay lab: giữ nguyên tính năng, vẽ minh họa SVG riêng */
+"use strict";
+const $ = (id) => document.getElementById(id);
+
+/* ---------- DATA (5 nguyên tố + màu + màu đặc trưng) ---------- */
+const ELEMENTS = [
+  { name:"Hydrogen", sym:"H", num:1, mass:"1.008", group:"1", period:"1", type:"Phi kim", color:"Xanh dương", c:"#3FA7FF", fun:"Nhẹ nhất bảng tuần hoàn nên được bơm vào khinh khí cầu.", col:1, row:1 },
+  { name:"Carbon", sym:"C", num:6, mass:"12.011", group:"14", period:"2", type:"Phi kim", color:"Tím", c:"#9B7BFF", fun:"Vừa là than chì trong bút chì, vừa là kim cương lấp lánh.", col:14, row:2 },
+  { name:"Oxygen", sym:"O", num:8, mass:"15.999", group:"16", period:"2", type:"Phi kim", color:"Xanh lá", c:"#3ECF8E", fun:"Mỗi hơi thở của bạn đều có nó. Cây xanh nhả O₂ mỗi ngày.", col:16, row:2 },
+  { name:"Sodium", sym:"Na", num:11, mass:"22.990", group:"1", period:"3", type:"Kim loại kiềm", color:"Cam", c:"#FF9F45", fun:"Một nửa của muối ăn. Gặp nước là xèo xèo nổ lách tách.", col:1, row:3 },
+  { name:"Chlorine", sym:"Cl", num:17, mass:"35.45", group:"17", period:"3", type:"Halogen", color:"Hồng", c:"#FF7BAC", fun:"Người hùng thầm lặng khử trùng nước hồ bơi.", col:17, row:3 },
+];
+
+/* ---------- HÌNH MINH HỌA SVG (vẽ tay cho từng nguyên tố) ---------- */
+const ILLUS = {
+  H: `<svg class="illus" viewBox="0 0 160 120">
+    <ellipse class="float-a" cx="80" cy="52" rx="34" ry="40" fill="#3FA7FF" stroke="#26314B" stroke-width="3.5"/>
+    <ellipse cx="68" cy="40" rx="9" ry="13" fill="#fff" opacity=".55"/>
+    <text x="80" y="66" text-anchor="middle" font-size="30" font-weight="900" fill="#fff" font-family="Be Vietnam Pro">H₂</text>
+    <path d="M80 92 L74 110 M80 92 L86 110" stroke="#26314B" stroke-width="3" fill="none"/>
+    <rect class="float-b" x="18" y="88" width="26" height="12" rx="6" fill="#fff" stroke="#26314B" stroke-width="2.5"/>
+    <rect class="float-a" x="118" y="92" width="30" height="12" rx="6" fill="#fff" stroke="#26314B" stroke-width="2.5"/>
+    <circle class="rise r1" cx="112" cy="30" r="3" fill="#3FA7FF"/><circle class="rise r2" cx="122" cy="26" r="2.2" fill="#3FA7FF"/>
+  </svg>`,
+  C: `<svg class="illus" viewBox="0 0 160 120">
+    <polygon class="float-a" points="80,18 118,48 80,102 42,48" fill="#9B7BFF" stroke="#26314B" stroke-width="3.5"/>
+    <polyline points="42,48 80,62 118,48" fill="none" stroke="#26314B" stroke-width="2.5"/>
+    <line x1="80" y1="62" x2="80" y2="102" stroke="#26314B" stroke-width="2.5"/>
+    <polygon points="66,30 74,32 80,26 86,32 94,30 88,40 80,44 72,40" fill="#fff" opacity=".8"/>
+    <path class="float-b" d="M30 30 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#FFD23F" stroke="#26314B" stroke-width="2"/>
+    <path class="float-a" d="M128 70 l2.4 5.6 5.6 2.4 -5.6 2.4 -2.4 5.6 -2.4 -5.6 -5.6 -2.4 5.6 -2.4z" fill="#FFD23F" stroke="#26314B" stroke-width="2"/>
+  </svg>`,
+  O: `<svg class="illus" viewBox="0 0 160 120">
+    <path class="sway" d="M80 104 C50 90 44 52 84 26 C124 52 112 92 80 104z" fill="#3ECF8E" stroke="#26314B" stroke-width="3.5"/>
+    <path d="M80 100 L80 40 M80 66 L64 56 M80 66 L96 56 M80 82 L62 72 M80 82 L98 72" stroke="#26314B" stroke-width="2.5" fill="none"/>
+    <path class="float-a" d="M28 78 q10 -12 22 -6 q-10 12 -22 6z" fill="#7DE8B4" stroke="#26314B" stroke-width="2.5"/>
+    <circle class="rise r1" cx="126" cy="70" r="4" fill="none" stroke="#26314B" stroke-width="2.5"/>
+    <circle class="rise r2" cx="134" cy="56" r="3" fill="none" stroke="#26314B" stroke-width="2.5"/>
+    <circle class="rise r3" cx="120" cy="46" r="2.2" fill="#3ECF8E"/>
+  </svg>`,
+  Na: `<svg class="illus" viewBox="0 0 160 120">
+    <g class="float-a">
+      <rect x="52" y="26" width="46" height="40" rx="8" fill="#fff" stroke="#26314B" stroke-width="3.5" transform="rotate(-14 75 46)"/>
+      <rect x="60" y="14" width="30" height="14" rx="5" fill="#FFD23F" stroke="#26314B" stroke-width="3" transform="rotate(-14 75 21)"/>
+      <text x="72" y="54" text-anchor="middle" font-size="20" font-weight="900" fill="#26314B" font-family="Be Vietnam Pro" transform="rotate(-14 72 54)">Na</text>
+    </g>
+    <circle class="rise r1" cx="104" cy="66" r="3" fill="#FF9F45" stroke="#26314B" stroke-width="1.6"/>
+    <circle class="rise r2" cx="112" cy="74" r="2.4" fill="#FF9F45" stroke="#26314B" stroke-width="1.6"/>
+    <rect class="float-b" x="92" y="96" width="44" height="12" rx="6" fill="#FFD9AE" stroke="#26314B" stroke-width="2.5"/>
+    <path class="flick" d="M40 84 q6 -14 0 -26 q10 8 8 22 q6 -6 4 -16 q10 12 2 26z" fill="#FF9F45" stroke="#26314B" stroke-width="2.5"/>
+  </svg>`,
+  Cl: `<svg class="illus" viewBox="0 0 160 120">
+    <path class="float-a" d="M80 16 C62 44 50 62 50 80 a30 30 0 0 0 60 0 C110 62 98 44 80 16z" fill="#7CC7FF" stroke="#26314B" stroke-width="3.5"/>
+    <path d="M64 84 a16 16 0 0 0 12 14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+    <text x="80" y="82" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" font-family="Be Vietnam Pro">Cl</text>
+    <path class="float-b" d="M20 104 q8 -8 16 0 t16 0" fill="none" stroke="#26314B" stroke-width="2.5"/>
+    <path class="float-a" d="M104 106 q8 -8 16 0 t16 0" fill="none" stroke="#26314B" stroke-width="2.5"/>
+    <circle class="rise r1" cx="130" cy="40" r="3" fill="#FF7BAC"/><circle class="rise r2" cx="30" cy="44" r="2.4" fill="#FF7BAC"/>
+  </svg>`,
+};
+
+/* ---------- SOUND MANAGER (Web Audio, không file ngoài) ---------- */
+let AC=null, master=null;
+let soundOn = localStorage.getItem("cf_sound") !== "off";
+let volume = parseInt(localStorage.getItem("cf_vol") || "60", 10);
+function ctx(){
+  if(!AC){
+    const A = window.AudioContext || window.webkitAudioContext;
+    if(!A) return null;
+    AC = new A(); master = AC.createGain();
+    master.gain.value = (volume/100)*0.6;
+    master.connect(AC.destination);
+  }
+  if(AC.state==="suspended") AC.resume();
+  return AC;
 }
-[data-theme="dark"]{
-  --paper:#131A2E; --card:#1C2542; --ink:#F2EAD8; --muted:#9AA3C0;
-  --line:#F2EAD8; --shadow:5px 5px 0 #000;
-  --grid:rgba(242,234,216,.06);
+function tone(f,{d=.15,t="sine",v=.25,dl=0,slide=null}={}){
+  if(!soundOn) return;
+  try{
+    const c=ctx(); if(!c) return;
+    const t0=c.currentTime+dl, o=c.createOscillator(), g=c.createGain();
+    o.type=t; o.frequency.setValueAtTime(f,t0);
+    if(slide) o.frequency.exponentialRampToValueAtTime(slide,t0+d);
+    g.gain.setValueAtTime(.0001,t0);
+    g.gain.exponentialRampToValueAtTime(v,t0+.015);
+    g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+    o.connect(g); g.connect(master); o.start(t0); o.stop(t0+d+.05);
+  }catch(e){}
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0; font-family:"Be Vietnam Pro",system-ui,sans-serif; color:var(--ink);
-  background-color:var(--paper);
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-  background-size:28px 28px;
-  min-height:100vh; overflow-x:hidden; transition:background .35s,color .35s;
+const S = {
+  click(){ tone(760,{d:.06,t:"triangle",v:.15}); },
+  flip(){ tone(320,{d:.18,v:.16,slide:720}); },
+  move(){ tone(520,{d:.08,t:"triangle",v:.14,slide:680}); },
+  good(){ [523,659,784,1046].forEach((f,i)=>tone(f,{d:.2,v:.2,dl:i*.09})); },
+  bad(){ tone(180,{d:.25,t:"sawtooth",v:.09,slide:120}); },
+  win(){ [523,587,659,784,880,1046].forEach((f,i)=>tone(f,{d:.24,t:"triangle",v:.2,dl:i*.11})); },
+  page(){ tone(440,{d:.07,v:.1,slide:660}); },
+};
+function setVol(v){ volume=v; localStorage.setItem("cf_vol",v); if(master) master.gain.value=(v/100)*0.6; }
+
+/* ---------- TOAST + CONFETTI ---------- */
+function toast(msg){
+  const t=document.createElement("div"); t.className="toast"; t.textContent=msg;
+  $("toasts").appendChild(t); setTimeout(()=>t.remove(),2600);
 }
-.mono, .chip, .f-num, .q-count, .pt-cell{font-family:"IBM Plex Mono",monospace}
-#particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
-.wrap{max-width:1060px;margin:0 auto;padding:14px 16px 40px;position:relative;z-index:1}
-h1,h2,h3{line-height:1.15;margin:0 0 10px}
-.hidden{display:none!important}
-.tiny{color:var(--muted);font-size:13px}
-/* reveal */
-[data-reveal]{opacity:0;transform:translateY(22px);transition:opacity .6s var(--smooth),transform .6s var(--smooth)}
-[data-reveal].in{opacity:1;transform:none}
-
-/* ---- intro ---- */
-.intro{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--paper);transition:opacity .45s}
-.intro.hide{opacity:0;pointer-events:none}
-.intro-card{background:var(--card);border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:30px 44px;text-align:center;transform:rotate(-1.5deg);animation:wiggle 2s ease-in-out infinite}
-@keyframes wiggle{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1deg)}}
-.intro-logo{font-weight:900;font-size:30px;letter-spacing:2px}
-.intro-sub{color:var(--muted);margin:4px 0 12px}
-.intro-bar{width:210px;height:12px;border:3px solid var(--line);border-radius:99px;overflow:hidden;background:var(--paper)}
-.intro-bar div{height:100%;width:0;background:repeating-linear-gradient(45deg,var(--yellow) 0 10px,var(--orange) 10px 20px)}
-.flask-mini{width:56px}
-.flask-mini .bub{animation:rise 1.4s ease-in infinite}
-.flask-mini .b2{animation-delay:.4s}.flask-mini .b3{animation-delay:.8s}
-@keyframes rise{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-12px);opacity:0}}
-
-/* ---- ticker ---- */
-.ticker{background:var(--ink);color:var(--paper);overflow:hidden;white-space:nowrap;position:relative;z-index:2}
-.ticker-in{display:inline-block;padding:7px 0;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:700;letter-spacing:1px;animation:tick 26s linear infinite}
-@keyframes tick{to{transform:translateX(-50%)}}
-
-/* ---- header ---- */
-.header{position:sticky;top:10px;z-index:30;max-width:1060px;margin:10px auto 0;width:calc(100% - 20px)}
-.header-in{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:9px 14px}
-.brand{display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--ink);font:900 17px "Be Vietnam Pro",sans-serif;letter-spacing:1px;cursor:pointer}
-.brand-flask{width:26px;transform:rotate(-6deg)}
-.nav{display:flex;gap:2px;flex-wrap:wrap}
-.nav-link{background:transparent;border:2px solid transparent;color:var(--muted);font:700 13.5px "Be Vietnam Pro",sans-serif;padding:8px 12px;border-radius:12px;cursor:pointer;transition:.18s var(--spring)}
-.nav-link:hover{color:var(--ink);border-color:var(--line);transform:translateY(-1px) rotate(-.5deg)}
-.nav-link.active{background:var(--yellow);color:#26314B;border-color:var(--line);box-shadow:3px 3px 0 var(--line)}
-.header-right{display:flex;gap:8px;align-items:center}
-.score-pill{background:var(--pink);border:3px solid var(--line);border-radius:999px;padding:5px 13px;font-weight:900;box-shadow:3px 3px 0 var(--line);color:#26314B}
-.icon-btn{width:42px;height:42px;border-radius:13px;border:3px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:17px;box-shadow:3px 3px 0 var(--line);transition:.16s var(--spring)}
-.icon-btn:hover{transform:translateY(-2px) rotate(-2deg)}
-.icon-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
-.burger{display:none}
-
-/* ---- pages ---- */
-.page{display:none}
-.page.active{display:block;animation:pageIn .45s var(--smooth)}
-@keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-
-/* ---- hero ---- */
-.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:center;background:var(--card);border:3px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:34px;margin-top:16px;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;top:-40px;right:-40px;width:170px;height:170px;border-radius:50%;background:var(--yellow);opacity:.35}
-.sticker{display:inline-block;background:var(--green);border:3px solid var(--line);border-radius:999px;padding:5px 14px;font:700 12px "IBM Plex Mono",monospace;box-shadow:3px 3px 0 var(--line);transform:rotate(-2deg);color:#26314B}
-.hero h1{font-size:clamp(32px,5.4vw,58px);font-weight:900;margin:14px 0 8px}
-.marker{background:linear-gradient(transparent 55%,var(--yellow) 55%);padding:0 6px}
-.tagline{font-family:"IBM Plex Mono",monospace;font-weight:700;color:var(--muted)}
-.desc{color:var(--muted);max-width:46ch}
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}
-.hero-stats{display:flex;gap:12px;flex-wrap:wrap}
-.stat{background:var(--paper);border:3px solid var(--line);border-radius:16px;box-shadow:4px 4px 0 var(--line);padding:10px 18px;min-width:110px;text-align:center}
-.stat b{font-size:26px;display:block}.stat span{color:var(--muted);font-size:12px}
-/* hero art */
-.hero-art{display:flex;justify-content:center}
-.lab-scene{width:min(320px,100%)}
-.lab-scene .shadow{fill:rgba(38,49,75,.15)}
-.flask-body{fill:#fff;stroke:var(--line);stroke-width:5}
-.flask-mouth{fill:var(--yellow);stroke:var(--line);stroke-width:4}
-.liquid-big{fill:var(--blue);opacity:.9;animation:slosh 3.4s ease-in-out infinite}
-@keyframes slosh{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
-.lab-scene .bub{fill:#fff;animation:rise 1.8s ease-in infinite}
-.lab-scene .b2{animation-delay:.5s}.lab-scene .b3{animation-delay:1s}.lab-scene .b4{animation-delay:1.4s}
-.m-nuc{fill:var(--pink);stroke:var(--line);stroke-width:2.5}
-.m-orbit{fill:none;stroke:var(--line);stroke-width:2.5}
-.m-e{fill:var(--yellow);stroke:var(--line);stroke-width:2}
-.mini-atom{animation:bob 3s ease-in-out infinite;transform-origin:228px 70px}
-@keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-9px) rotate(6deg)}}
-.chip-f rect{fill:var(--card);stroke:var(--line);stroke-width:3}
-.chip-f text{font:900 20px "Be Vietnam Pro";fill:var(--ink);text-anchor:middle}
-.chip-f.f1{animation:bob 2.6s ease-in-out infinite}
-.chip-f.f2{animation:bob 3.4s ease-in-out infinite reverse}
-
-/* ---- sections ---- */
-.sec-title{margin:30px 4px 4px;font-size:24px;font-weight:900}
-.sec-title .doodle{color:var(--pink)}
-.sec-sub{color:var(--muted);margin:0 4px 12px}
-.el-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.el-card{background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;cursor:pointer;transition:transform .25s var(--spring),box-shadow .25s;position:relative;overflow:hidden}
-.el-card:hover{transform:translateY(-6px) rotate(-1deg)}
-.el-card:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
-.el-tag{position:absolute;top:0;left:0;right:0;height:9px;background:var(--ec)}
-.el-num{font-size:12px;font-weight:700;color:var(--muted)}
-.el-illus svg{width:100%;height:86px}
-.el-sym{font-size:30px;font-weight:900;color:var(--ec)}
-.el-name{font-weight:700}
-.el-go{font-size:12px;color:var(--muted);font-weight:700}
-/* steps */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
-.step{background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
-.step-n{display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;background:var(--ink);color:var(--paper);font-weight:900;border-radius:50%;margin-bottom:8px}
-.step p{color:var(--muted);font-size:13.5px;margin:6px 0 0}
-/* cta */
-.cta{margin-top:22px;text-align:center;background:var(--ink);color:var(--paper);border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:34px 22px}
-[data-theme="dark"] .cta{background:#0C1226}
-.cta p{opacity:.75}
-/* buttons */
-.btn{border:3px solid var(--line);border-radius:14px;padding:12px 22px;font:800 15px "Be Vietnam Pro",sans-serif;cursor:pointer;box-shadow:4px 4px 0 var(--line);transition:transform .16s var(--spring),box-shadow .16s}
-.btn:hover{transform:translate(-1px,-2px);box-shadow:5px 6px 0 var(--line)}
-.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--line)}
-.btn-primary{background:var(--yellow);color:#26314B}
-.btn-ghost{background:var(--card);color:var(--ink)}
-.btn-lg{font-size:16px;padding:14px 30px}
-.btn-sm{padding:7px 12px;font-size:13px}
-
-/* ---- panel ---- */
-.panel{background:var(--card);border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:24px;margin-top:16px}
-.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.chip{background:var(--paper);border:2.5px solid var(--line);padding:6px 13px;border-radius:999px;font-size:13px;font-weight:700}
-.chip.gold{background:var(--yellow);color:#26314B}
-.chip.combo{background:var(--pink);color:#26314B;animation:pop .3s var(--spring)}
-@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
-.progress{height:14px;background:var(--paper);border:3px solid var(--line);border-radius:99px;overflow:hidden;margin:14px 0}
-.progress div{height:100%;width:0;background:repeating-linear-gradient(45deg,var(--green) 0 12px,#2BAE76 12px 24px);transition:width .45s var(--spring)}
-/* flashcard */
-.scene{perspective:1400px;max-width:420px;margin:18px auto 6px}
-.card3d{cursor:pointer;outline:none}
-.card-in{position:relative;height:500px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,1.25,.4,1)}
-.card3d.flip .card-in{transform:rotateY(180deg)}
-.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow:hidden}
-.front{background:var(--card)}
-.front::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;background:var(--ec,var(--blue))}
-.tape{position:absolute;top:20px;left:50%;transform:translateX(-50%) rotate(-3deg);width:90px;height:24px;background:rgba(255,210,63,.7);border:2px solid var(--line);opacity:.9}
-.f-num{position:absolute;top:22px;left:20px;background:var(--ink);color:var(--paper);font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px}
-.f-illus svg{width:170px;height:130px}
-.f-sym{font-size:84px;font-weight:900;color:var(--ec);line-height:1}
-.f-name{font-size:24px;font-weight:800}
-.f-hint{margin-top:12px;font-size:12.5px;color:var(--muted);border:2px dashed var(--muted);padding:6px 14px;border-radius:999px}
-.back{background:var(--paper);transform:rotateY(180deg);justify-content:flex-start}
-.b-top{display:flex;align-items:center;gap:10px;width:100%}
-.b-sym{font-size:38px;font-weight:900;color:var(--ec);background:var(--card);border:3px solid var(--line);border-radius:14px;min-width:64px;height:64px;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--line)}
-.b-name{font-size:20px;font-weight:900}
-.b-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin:12px 0}
-.b-grid div{background:var(--card);border:2.5px solid var(--line);border-radius:12px;padding:8px 11px;font-size:13px}
-.b-grid span{display:block;color:var(--muted);font-size:11px;font-weight:700}
-.b-grid b{font-size:13.5px}
-.fun{background:#FFF3C4;border:2.5px solid var(--line);border-radius:12px;padding:10px 13px;font-size:13.5px;width:100%;color:#26314B}
-[data-theme="dark"] .fun{background:#2A2410;color:var(--ink)}
-.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
-.btn-row .btn{flex:1;min-width:140px;max-width:230px}
-.done{margin-top:14px;text-align:center;background:var(--green);color:#26314B;border:3px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px;font-weight:800;animation:pop .4s var(--spring)}
-/* ptable */
-.ptable{display:grid;grid-template-columns:repeat(18,1fr);gap:6px;margin:16px 0}
-.pt-cell{aspect-ratio:.8;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:12px;background:transparent;border:2.5px dashed var(--muted);opacity:.35;min-height:52px}
-.pt-cell.on{background:var(--card);border:2.5px solid var(--line);opacity:1;cursor:pointer;box-shadow:3px 3px 0 var(--line);transition:.2s var(--spring);border-top:8px solid var(--ec)}
-.pt-cell.on:hover{transform:translateY(-3px) rotate(-2deg)}
-.pt-cell.on.sel{background:var(--yellow);color:#26314B}
-.pt-cell small{font-size:10px}
-.pdetail{display:flex;gap:14px;align-items:center;background:var(--paper);border:3px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px}
-.pd-illus svg{width:120px;height:100px}
-.pd-illus{background:var(--card);border:2.5px solid var(--line);border-radius:14px;padding:6px}
-/* quiz */
-.q-text{font-size:19px;font-weight:800;margin:12px 0}
-.q-opts{display:flex;flex-direction:column;gap:10px}
-.q-opt{text-align:left;padding:13px 15px;border-radius:13px;border:3px solid var(--line);background:var(--card);color:var(--ink);font:700 15px "Be Vietnam Pro",sans-serif;cursor:pointer;box-shadow:3px 3px 0 var(--line);transition:.18s var(--spring)}
-.q-opt:hover:not(:disabled){transform:translateX(4px)}
-.q-opt:disabled{cursor:default}
-.q-opt.ok{background:var(--green)!important;color:#26314B;animation:pop .3s var(--spring)}
-.q-opt.bad{background:var(--pink)!important;color:#26314B;animation:shake .35s}
-@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
-.q-feed{min-height:30px;font-weight:800;text-align:center;margin:10px 0}
-.q-feed.ok{color:#1E9E64}.q-feed.no{color:#E14D6B}
-.end{text-align:center}.score-big{font-size:64px;font-weight:900}
-/* ranks */
-.rank-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
-.rank-grid>div{background:var(--paper);border:3px solid var(--line);border-radius:16px;box-shadow:4px 4px 0 var(--line);padding:14px;text-align:center}
-.rank-grid b{font-size:24px;display:block}.rank-grid span{color:var(--muted);font-size:12px}
-.badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.badge{padding:16px 10px;border-radius:16px;text-align:center;border:3px dashed var(--muted);opacity:.5;filter:grayscale(1)}
-.badge.un{opacity:1;filter:none;border:3px solid var(--line);background:var(--yellow);color:#26314B;box-shadow:var(--shadow);transform:rotate(-1deg)}
-.badge .bi{font-size:32px}.badge b{display:block;margin-top:6px}.badge small{font-size:12px}
-/* account */
-.account{max-width:520px;margin:0 auto}
-.tabs{display:flex;gap:8px;margin:12px 0}
-.tab{flex:1;padding:10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);font-weight:800;cursor:pointer}
-.tab.active{background:var(--ink);color:var(--paper)}
-.account label{display:block;font-size:13px;font-weight:800;margin:10px 0 4px}
-.account input{width:100%;padding:11px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);font-size:15px;font-family:inherit}
-.account input:focus{outline:none;box-shadow:3px 3px 0 var(--blue)}
-.err{min-height:20px;color:#E14D6B;font-weight:700;font-size:13.5px;margin:8px 0}
-.me{display:flex;gap:10px;align-items:center}.avatar{font-size:30px;background:var(--yellow);border:3px solid var(--line);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--line)}
-.sound-row{display:flex;gap:10px;align-items:center;margin:14px 0;flex-wrap:wrap}
-input[type=range]{flex:1;accent-color:var(--pink)}
-.footer{text-align:center;color:var(--muted);font-size:13px;margin:26px 0 8px}
-/* toast + confetti */
-#toasts{position:fixed;bottom:18px;right:18px;z-index:90;display:flex;flex-direction:column;gap:8px}
-.toast{background:var(--ink);color:var(--paper);border:3px solid var(--line);padding:11px 16px;border-radius:14px;font-weight:700;box-shadow:var(--shadow);animation:pageIn .3s;max-width:300px}
-#confetti{position:fixed;inset:0;pointer-events:none;z-index:80;overflow:hidden}
-.cf{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
-@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
-/* element illustration anims */
-.illus .float-a{animation:flUp 2.6s ease-in-out infinite}
-.illus .float-b{animation:flUp 3.2s ease-in-out infinite reverse}
-@keyframes flUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.illus .rise{animation:rise 2s ease-in infinite}
-.illus .rise.r2{animation-delay:.6s}.illus .rise.r3{animation-delay:1.2s}
-.illus .sway{animation:sway 3s ease-in-out infinite;transform-origin:bottom center}
-@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-.illus .flick{animation:flick 1.6s ease-in-out infinite;transform-origin:bottom center}
-@keyframes flick{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.08)}}
-.illus .spin-slow{animation:orbit 10s linear infinite;transform-origin:center}
-@media(max-width:900px){.hero{grid-template-columns:1fr}.el-grid{grid-template-columns:repeat(3,1fr)}.rank-grid,.badge-grid{grid-template-columns:repeat(2,1fr)}.ptable{grid-template-columns:repeat(9,1fr)}.steps{grid-template-columns:1fr}}
-@media(max-width:640px){
-  .nav{position:fixed;top:74px;right:12px;flex-direction:column;background:var(--card);border:3px solid var(--line);border-radius:16px;padding:8px;display:none;min-width:210px;box-shadow:var(--shadow);z-index:40}
-  .nav.open{display:flex}.burger{display:block}
-  .el-grid{grid-template-columns:repeat(2,1fr)}
-  .btn-row .btn{min-width:100%}
-  .card-in{height:520px}.f-sym{font-size:70px}
-  .ptable{grid-template-columns:repeat(6,1fr)}
-  .header{top:8px}
+function confetti(n=40){
+  const box=$("confetti"), colors=["#FFD23F","#FF7BAC","#3ECF8E","#3FA7FF","#9B7BFF"];
+  for(let i=0;i<n;i++){
+    const s=document.createElement("span"); s.className="cf";
+    s.style.left=Math.random()*100+"vw";
+    s.style.background=colors[i%colors.length];
+    s.style.animationDuration=(1.6+Math.random()*1.4)+"s";
+    box.appendChild(s); setTimeout(()=>s.remove(),3200);
+  }
 }
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;transition-duration:.01s!important}[data-reveal]{opacity:1;transform:none}}
+
+/* ---------- STORE (LocalStorage, demo) ---------- */
+const blankStats = () => ({ score:0, best:0, answered:0, correct:0, wrong:0, studied:[], maxCombo:0 });
+function getUsers(){ try{return JSON.parse(localStorage.getItem("cf_users")||"{}")}catch(e){return{}} }
+function setUsers(u){ localStorage.setItem("cf_users",JSON.stringify(u)); }
+function session(){ return localStorage.getItem("cf_session"); }
+function hash(s){ let h=5381; s="cf::"+s; for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))>>>0; return "h"+h.toString(16); }
+function myStats(){
+  const u=session(), users=getUsers();
+  if(u && users[u]) return users[u].stats;
+  try{ return JSON.parse(localStorage.getItem("cf_guest")||"null") || blankStats(); }catch(e){ return blankStats(); }
+}
+function saveStats(st){
+  const u=session(), users=getUsers();
+  if(u && users[u]){ users[u].stats=st; setUsers(users); }
+  else localStorage.setItem("cf_guest",JSON.stringify(st));
+  renderHUD();
+}
+function addStudied(sym){
+  const st=myStats();
+  if(!st.studied.includes(sym)){ st.studied.push(sym); saveStats(st); }
+  studyProgress(); renderHomeStats(); // không render lại thẻ để giữ mặt đang lật
+}
+function studyProgress(){
+  const st=myStats(), n=st.studied.length;
+  $("flashCount").textContent=`Bạn đã khám phá ${n}/5 nguyên tố`;
+  $("flashBar").style.width=(n/5*100)+"%";
+  $("studyScore").textContent=n*20;
+  $("doneBox").classList.toggle("hidden",n<5);
+  if(n===5 && !st._cheered){ st._cheered=true; saveStats(st); S.win(); confetti(50); toast("Bạn đã hoàn thành bộ Flashcard! 100/100"); }
+}
+
+/* ---------- INTRO ---------- */
+function hideIntro(){
+  if($("intro").classList.contains("hide")) return;
+  let p = parseInt($("introFill").style.width || "0", 10);
+  const iv=setInterval(()=>{ p+=25; $("introFill").style.width=p+"%";
+    if(p>=100){ clearInterval(iv); setTimeout(()=>$("intro").classList.add("hide"),250); }
+  },120);
+}
+window.addEventListener("load", hideIntro);
+setTimeout(hideIntro, 4000); // dự phòng khi font/mạng treo
+
+/* ---------- PARTICLES (bụi phấn nhẹ, khóa 30fps) ---------- */
+let refreshDots = ()=>{};
+(function particles(){
+  const cv=$("particles"), c=cv.getContext("2d");
+  let W,H,pts=[];
+  function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight;
+    const n = innerWidth<640?26:46;
+    pts=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.28,vy:(Math.random()-.5)*.28,r:Math.random()*1.7+.7}));
+  }
+  rs(); addEventListener("resize",rs); refreshDots=rs;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let last=0;
+  (function loop(t){
+    requestAnimationFrame(loop);
+    if(reduced) return;
+    if(t-last<33) return; last=t;
+    c.clearRect(0,0,W,H);
+    const col = getComputedStyle(document.body).color;
+    pts.forEach(a=>{ a.x+=a.vx; a.y+=a.vy;
+      if(a.x<0||a.x>W)a.vx*=-1; if(a.y<0||a.y>H)a.vy*=-1;
+      c.globalAlpha=.3; c.beginPath(); c.arc(a.x,a.y,a.r,0,7); c.fillStyle=col; c.fill(); c.globalAlpha=1;
+    });
+  })();
+})();
+
+/* ---------- REVEAL ON SCROLL ---------- */
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} }),{threshold:.12});
+function watchReveals(){ document.querySelectorAll("[data-reveal]:not(.in)").forEach(el=>io.observe(el)); }
+
+/* ---------- TICKER ---------- */
+function renderTicker(){
+  const one = ELEMENTS.map(e=>`${e.sym} • ${e.name.toUpperCase()} • Z=${e.num}`).join(" &nbsp;★&nbsp; ");
+  $("tickerIn").innerHTML = (one+" &nbsp;★&nbsp; ").repeat(4);
+}
+
+/* ---------- SPA NAV ---------- */
+function go(page){
+  document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));
+  $("page-"+page).classList.add("active");
+  document.querySelectorAll(".nav-link").forEach(b=>b.classList.toggle("active",b.dataset.nav===page));
+  $("nav").classList.remove("open");
+  S.page();
+  if(page==="ranks") renderRanks();
+  if(page==="account") renderAccount();
+  if(page==="home") renderHomeStats();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.nav)));
+$("burger").addEventListener("click",()=>{ $("nav").classList.toggle("open"); S.click(); });
+
+/* ---------- THEME (sáng mặc định, tối là lab đêm) ---------- */
+function initTheme(){
+  const t=localStorage.getItem("cf_theme")||"light";
+  document.documentElement.setAttribute("data-theme",t);
+  $("themeBtn").textContent = t==="dark" ? "☀️" : "🌙";
+}
+$("themeBtn").addEventListener("click",()=>{
+  const n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",n);
+  localStorage.setItem("cf_theme",n);
+  $("themeBtn").textContent=n==="dark"?"☀️":"🌙"; S.click(); refreshDots();
+});
+
+/* ---------- SOUND UI ---------- */
+function syncSound(){ $("soundBtn").textContent=soundOn?"🔊":"🔇"; $("muteBtn").textContent=soundOn?"Tắt tiếng":"Bật tiếng"; }
+$("soundBtn").addEventListener("click",()=>{ soundOn=!soundOn; localStorage.setItem("cf_sound",soundOn?"on":"off"); syncSound(); if(soundOn)S.click(); });
+$("muteBtn").addEventListener("click",()=>{ soundOn=!soundOn; localStorage.setItem("cf_sound",soundOn?"on":"off"); syncSound(); });
+$("vol").value=volume;
+$("vol").addEventListener("input",e=>setVol(+e.target.value));
+document.addEventListener("pointerdown",()=>ctx(),{once:true});
+
+/* ---------- AUTH ---------- */
+let authMode="login";
+function setAuth(m){
+  authMode=m;
+  $("tLogin").classList.toggle("active",m==="login");
+  $("tReg").classList.toggle("active",m==="register");
+  $("regExtra").classList.toggle("hidden",m==="login");
+  $("aGo").textContent=m==="login"?"Đăng nhập":"Tạo tài khoản";
+  $("aErr").textContent="";
+}
+$("tLogin").addEventListener("click",()=>{setAuth("login");S.click();});
+$("tReg").addEventListener("click",()=>{setAuth("register");S.click();});
+$("aGo").addEventListener("click",()=>{
+  const u=$("aUser").value.trim(), p=$("aPass").value, p2=$("aPass2").value;
+  const err=$("aErr"), users=getUsers();
+  if(!u||!p){ err.textContent="Đừng bỏ trống tên và mật khẩu nhé."; return; }
+  if(authMode==="register"){
+    if(p.length<4){ err.textContent="Mật khẩu phải ít nhất 4 ký tự."; return; }
+    if(p!==p2){ err.textContent="Hai ô mật khẩu chưa giống nhau."; return; }
+    if(users[u]){ err.textContent="Tên này có người dùng rồi, đổi tên khác nhé."; return; }
+    users[u]={hash:hash(p),created:Date.now(),stats:blankStats()};
+    setUsers(users); localStorage.setItem("cf_session",u);
+    toast("Tạo tài khoản thành công, chào bạn mới!"); S.win(); renderAccount(); renderHUD();
+  }else{
+    if(!users[u]||users[u].hash!==hash(p)){ err.textContent="Sai tên hoặc mật khẩu rồi."; S.bad(); return; }
+    localStorage.setItem("cf_session",u);
+    toast(`Chào mừng trở lại, ${u}!`); S.good(); renderAccount(); renderHUD();
+  }
+});
+$("logout").addEventListener("click",()=>{ localStorage.removeItem("cf_session"); toast("Đã đăng xuất."); S.click(); renderAccount(); renderHUD(); });
+function renderAccount(){
+  const u=session(), users=getUsers();
+  const logged = u && users[u];
+  $("authForms").classList.toggle("hidden",!!logged);
+  $("authInfo").classList.toggle("hidden",!logged);
+  if(logged){
+    $("meName").textContent=u;
+    const st=users[u].stats;
+    const acc = st.answered? Math.round(st.correct/st.answered*100):0;
+    $("meMeta").textContent=`Tổng ${st.score} điểm • Đúng ${st.correct} • Sai ${st.wrong} • Đúng ${acc}%`;
+    $("meStats").innerHTML=`
+      <div><b>${st.score}</b><span>tổng điểm</span></div>
+      <div><b>${st.best}</b><span>cao nhất</span></div>
+      <div><b>${st.correct}</b><span>câu đúng</span></div>
+      <div><b>x${st.maxCombo||0}</b><span>combo cao nhất</span></div>`;
+  }
+}
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  $("homeElements").innerHTML="";
+  ELEMENTS.forEach((el,i)=>{
+    const d=document.createElement("div");
+    d.className="el-card"; d.style.setProperty("--ec",el.c);
+    d.setAttribute("data-reveal","");
+    d.innerHTML=`<div class="el-tag"></div><div class="el-num">Z = ${el.num}</div>
+      <div class="el-illus">${ILLUS[el.sym]}</div>
+      <div class="el-sym">${el.sym}</div><div class="el-name">${el.name}</div>
+      <div class="el-go">học ngay →</div>`;
+    d.addEventListener("click",()=>{ S.click(); flashIdx=i; go("flash"); renderFlash(); });
+    $("homeElements").appendChild(d);
+  });
+  watchReveals();
+}
+function renderHomeStats(){
+  const st=myStats();
+  $("statBest").textContent=st.best;
+  $("statAcc").textContent=(st.answered?Math.round(st.correct/st.answered*100):0)+"%";
+}
+function renderHUD(){ $("hudScore").textContent=myStats().score; $("qBest").textContent=myStats().best; }
+
+/* ---------- FLASHCARD ---------- */
+let flashIdx=0, flipped=false;
+function renderFlash(){
+  const el=ELEMENTS[flashIdx];
+  flipped=false; $("card").classList.remove("flip");
+  document.querySelector("#card .front").style.setProperty("--ec",el.c);
+  document.querySelector("#card .back").style.setProperty("--ec",el.c);
+  $("fNum").textContent="Z = "+el.num;
+  $("fIllus").innerHTML=ILLUS[el.sym];
+  $("fSym").textContent=el.sym;
+  $("fName").textContent=el.name;
+  $("bSym").textContent=el.sym;
+  $("bName").textContent=el.name.toUpperCase();
+  $("bNum").textContent=el.num; $("bMass").textContent=el.mass;
+  $("bGroup").textContent=el.group; $("bPeriod").textContent=el.period;
+  $("bType").textContent=el.type; $("bColor").textContent=el.color;
+  $("bFun").textContent=el.fun;
+  studyProgress();
+}
+function flip(){
+  flipped=!flipped;
+  $("card").classList.toggle("flip",flipped); S.flip();
+  if(flipped) addStudied(ELEMENTS[flashIdx].sym);
+}
+$("card").addEventListener("click",flip);
+$("flipEl").addEventListener("click",flip);
+$("card").addEventListener("keydown",e=>{
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}
+  if(e.key==="ArrowRight")$("nextEl").click();
+  if(e.key==="ArrowLeft")$("prevEl").click();
+});
+$("nextEl").addEventListener("click",()=>{ flashIdx=(flashIdx+1)%ELEMENTS.length; S.move(); renderFlash(); });
+$("prevEl").addEventListener("click",()=>{ flashIdx=(flashIdx-1+ELEMENTS.length)%ELEMENTS.length; S.move(); renderFlash(); });
+let tx=null;
+$("card").addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
+$("card").addEventListener("touchend",e=>{
+  if(tx===null)return; const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>45)(dx<0?$("nextEl"):$("prevEl")).click(); tx=null;
+},{passive:true});
+
+/* ---------- PERIODIC TABLE ---------- */
+let selPT=0;
+function renderTable(){
+  const g=$("ptable"); g.innerHTML="";
+  for(let r=1;r<=3;r++)for(let c=1;c<=18;c++){
+    const el=ELEMENTS.find(e=>e.row===r&&e.col===c);
+    const d=document.createElement("div");
+    d.className="pt-cell"+(el?" on":"");
+    if(el){ d.style.setProperty("--ec",el.c);
+      d.innerHTML=`<small>${el.num}</small>${el.sym}`;
+      d.addEventListener("click",()=>selectPT(el));
+    }
+    g.appendChild(d);
+  }
+  selectPT(ELEMENTS[selPT]);
+}
+function selectPT(el){
+  selPT=ELEMENTS.indexOf(el);
+  document.querySelectorAll(".pt-cell.on").forEach(x=>x.classList.remove("sel"));
+  [...document.querySelectorAll(".pt-cell.on")][selPT]?.classList.add("sel");
+  $("pdetail").classList.remove("hidden");
+  $("pdIllus").innerHTML=ILLUS[el.sym];
+  $("pdName").textContent=el.name;
+  $("pdMeta").textContent=`Z=${el.num} • Nhóm ${el.group} • Chu kỳ ${el.period} • ${el.type}`;
+  $("pdFun").textContent=el.fun;
+  S.click();
+}
+$("pdStudy").addEventListener("click",()=>{ flashIdx=selPT; go("flash"); renderFlash(); });
+
+/* ---------- QUIZ (10 câu trộn ngẫu nhiên) ---------- */
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function makeQ(){
+  const el=rnd(ELEMENTS), t=Math.floor(Math.random()*5);
+  const names=ELEMENTS.map(e=>e.name);
+  if(t===0) return {q:`Nguyên tố nào có ký hiệu ${el.sym}?`,opts:shuffle([el.name,...shuffle(names.filter(n=>n!==el.name)).slice(0,3)]),ans:el.name};
+  if(t===1){ const e2=rnd(ELEMENTS); return {q:`Ký hiệu của ${e2.name} là gì?`,opts:shuffle([e2.sym,...shuffle(ELEMENTS.map(e=>e.sym).filter(s=>s!==e2.sym)).slice(0,3)]),ans:e2.sym}; }
+  if(t===2){ const e2=rnd(ELEMENTS); const pool=shuffle(ELEMENTS.map(e=>e.num).filter(n=>n!==e2.num)).slice(0,3);
+    return {q:`${e2.name} (${e2.sym}) có số hiệu nguyên tử là bao nhiêu?`,opts:shuffle([e2.num,...pool]).map(String),ans:String(e2.num)}; }
+  if(t===3){ const e2=rnd(ELEMENTS); const pool=shuffle(ELEMENTS.map(e=>e.mass).filter(m=>m!==e2.mass)).slice(0,3);
+    return {q:`Nguyên tử khối gần đúng của ${e2.name} là?`,opts:shuffle([e2.mass,...pool]),ans:e2.mass}; }
+  const e2=rnd(ELEMENTS);
+  return {q:`${e2.name} thuộc nhóm / chu kỳ nào?`,opts:shuffle([`Nhóm ${e2.group} – Chu kỳ ${e2.period}`,...shuffle(ELEMENTS.filter(e=>e!==e2).map(e=>`Nhóm ${e.group} – Chu kỳ ${e.period}`)).slice(0,3)]),ans:`Nhóm ${e2.group} – Chu kỳ ${e2.period}`};
+}
+let QQ=[],qi=0,qScore=0,streak=0,qLock=false;
+$("startQuiz").addEventListener("click",()=>{
+  QQ=Array.from({length:10},makeQ); qi=0; qScore=0; streak=0;
+  $("quizSetup").classList.add("hidden"); $("quizResult").classList.add("hidden"); $("quizBox").classList.remove("hidden");
+  S.click(); renderQ();
+});
+function renderQ(){
+  qLock=false;
+  const q=QQ[qi];
+  $("qBar").style.width=(qi/10*100)+"%";
+  $("qCount").textContent=`Câu ${qi+1}/10`;
+  $("qText").textContent=q.q;
+  $("qFeed").textContent=""; $("qFeed").className="q-feed";
+  $("quizNextBtn").classList.add("hidden");
+  $("qScore").textContent=qScore;
+  const box=$("qOpts"); box.innerHTML="";
+  const L=["A","B","C","D"];
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement("button"); b.className="q-opt"; b.textContent=`${L[i]}. ${o}`;
+    b.addEventListener("click",()=>answer(o,b));
+    box.appendChild(b);
+  });
+}
+function answer(pick,btn){
+  if(qLock)return; qLock=true;
+  const q=QQ[qi], st=myStats();
+  document.querySelectorAll(".q-opt").forEach(b=>b.disabled=true);
+  st.answered++;
+  if(pick===q.ans){
+    btn.classList.add("ok"); qScore+=10; streak++;
+    st.correct++; st.score+=10;
+    if(streak>=2){ $("qCombo").classList.remove("hidden"); $("qCombo").textContent=`COMBO x${streak}`; }
+    if(streak===5) toast("COMBO x5 — cháy quá!");
+    $("qFeed").textContent="Chính xác! Bạn hiểu bài thật đấy.";
+    $("qFeed").classList.add("ok"); S.good(); confetti(24);
+  }else{
+    btn.classList.add("bad"); streak=0; $("qCombo").classList.add("hidden");
+    st.wrong++;
+    document.querySelectorAll(".q-opt").forEach(b=>{ if(b.textContent.includes(q.ans)) b.classList.add("ok"); });
+    $("qFeed").textContent=`Chưa đúng rồi. Đáp án là: ${q.ans}`;
+    $("qFeed").classList.add("no"); S.bad();
+  }
+  st.maxCombo=Math.max(st.maxCombo||0,streak);
+  if(qScore>st.best)st.best=qScore;
+  saveStats(st);
+  $("qBar").style.width=((qi+1)/10*100)+"%";
+  $("quizNextBtn").classList.remove("hidden");
+}
+$("quizNextBtn").addEventListener("click",()=>{
+  S.click();
+  if(qi<QQ.length-1){ qi++; renderQ(); }
+  else{
+    $("quizBox").classList.add("hidden"); $("quizResult").classList.remove("hidden");
+    $("quizScore").textContent=qScore;
+    let m = qScore===100 ? "PERFECT 10/10 — phong Nhà giả kim!" : qScore>=80 ? "Xuất sắc, suýt PERFECT!" : qScore>=50 ? "Khá rồi, lật thêm flashcard nhé." : "Đừng nản, học lại thẻ rồi quay lại.";
+    $("quizMessage").textContent=`Bạn đạt ${qScore}/100. ${m}`;
+    if(qScore===100){ S.win(); confetti(80); } else if(qScore>=50) S.good();
+    $("quizSetup").classList.remove("hidden");
+  }
+});
+$("quizRetryBtn").addEventListener("click",()=>$("startQuiz").click());
+
+/* ---------- RANKS ---------- */
+const BADGES=[
+  {i:"🥉",n:"Tập sự",d:"Trả lời đúng 1 câu",ok:s=>s.correct>=1},
+  {i:"🥈",n:"Nhà khám phá",d:"Học đủ 5 flashcard",ok:s=>s.studied.length>=5},
+  {i:"🥇",n:"Bậc thầy",d:"Điểm cao nhất từ 80",ok:s=>s.best>=80},
+  {i:"⚗",n:"Nhà giả kim",d:"PERFECT 100 điểm",ok:s=>s.best>=100},
+];
+function renderRanks(){
+  const st=myStats();
+  const acc=st.answered?Math.round(st.correct/st.answered*100):0;
+  $("rankGrid").innerHTML=`
+    <div><b>${st.score}</b><span>tổng điểm</span></div>
+    <div><b>${st.best}</b><span>điểm cao nhất</span></div>
+    <div><b>${st.answered}</b><span>câu đã làm</span></div>
+    <div><b>${st.correct}</b><span>câu đúng</span></div>
+    <div><b>${st.wrong}</b><span>câu sai</span></div>
+    <div><b>${acc}%</b><span>tỉ lệ đúng</span></div>
+    <div><b>${st.studied.length}/5</b><span>thẻ đã học</span></div>
+    <div><b>x${st.maxCombo||0}</b><span>combo cao nhất</span></div>`;
+  $("badgeGrid").innerHTML=BADGES.map(b=>{
+    const un=b.ok(st);
+    return `<div class="badge${un?" un":""}"><div class="bi">${b.i}</div><b>${b.n}</b><small>${b.d}</small><small>${un?"Đã mở khóa":"Chưa mở"}</small></div>`;
+  }).join("");
+}
+
+/* ---------- INIT ---------- */
+setAuth("login"); initTheme(); syncSound();
+renderTicker(); renderHome(); renderFlash(); renderTable(); renderRanks(); renderAccount(); renderHUD(); renderHomeStats();
+watchReveals();
