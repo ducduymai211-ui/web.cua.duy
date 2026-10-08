@@ -91,13 +91,13 @@ function addStudied(sym){
 }
 
 /* ---------- INTRO + PARTICLES ---------- */
-window.addEventListener("load", ()=>{
-  let p=0;
-  const iv=setInterval(()=>{ p+=20; $("introFill").style.width=p+"%";
-    if(p>=100){ clearInterval(iv); setTimeout(()=>$("intro").classList.add("hide"),250); }
-  },220);
-});
-(function particles(){
+window.addEventListener("load", hideIntro);
+// Dự phòng: nếu font/CDN treo khiến sự kiện load chậm, vẫn tự tắt intro
+setTimeout(hideIntro, 4000);
+function hideIntro(){
+  if($("intro").classList.contains("hide")) return;
+  let p = parseInt($("introFill").style.width || "0", 10);
+  const iv=setInterval(()=>{ p+=25; $("introFill").style.width=p+"%";
   const cv=$("particles"), c=cv.getContext("2d");
   let W,H,pts=[];
   function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight;
