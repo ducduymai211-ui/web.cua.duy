@@ -1,450 +1,403 @@
-/* Periodic Flashcards v2 — audio xịn + auth local + quiz MCQ & Đúng/Sai */
-
-const ELEMENTS = [
-  { name: "Hydrogen", symbol: "H", number: 1, mass: "1.008", group: "1", period: "1", type: "Phi kim", electron: "1s¹" },
-  { name: "Carbon", symbol: "C", number: 6, mass: "12.011", group: "14", period: "2", type: "Phi kim", electron: "1s² 2s² 2p²" },
-  { name: "Oxygen", symbol: "O", number: 8, mass: "15.999", group: "16", period: "2", type: "Phi kim", electron: "1s² 2s² 2p⁴" },
-  { name: "Sodium", symbol: "Na", number: 11, mass: "22.990", group: "1", period: "3", type: "Kim loại kiềm", electron: "1s² 2s² 2p⁶ 3s¹" },
-  { name: "Chlorine", symbol: "Cl", number: 17, mass: "35.45", group: "17", period: "3", type: "Halogen / Phi kim", electron: "1s² 2s² 2p⁶ 3s² 3p⁵" }
-];
-
-const QUIZ_MCQ = [
-  { q: "Nguyên tố Carbon (C) có số hiệu nguyên tử là bao nhiêu?", options: ["1", "6", "8", "11"], answer: 1 },
-  { q: "Ký hiệu hóa học của Sodium là gì?", options: ["S", "So", "Na", "Sd"], answer: 2 },
-  { q: "Nguyên tử khối của Oxygen (O) là bao nhiêu?", options: ["1.008", "12.011", "15.999", "35.45"], answer: 2 },
-  { q: "Chlorine (Cl) thuộc nhóm nào và chu kỳ nào?", options: ["Nhóm 1 – Chu kỳ 1", "Nhóm 14 – Chu kỳ 2", "Nhóm 1 – Chu kỳ 3", "Nhóm 17 – Chu kỳ 3"], answer: 3 },
-  { q: "Cấu hình electron của Hydrogen (H) là gì?", options: ["1s¹", "1s² 2s² 2p²", "1s² 2s² 2p⁶ 3s¹", "1s² 2s² 2p⁶ 3s² 3p⁵"], answer: 0 }
-];
-
-// Quiz Đúng / Sai mới
-const QUIZ_TF = [
-  { q: "Hydrogen (H) có số hiệu nguyên tử là 1.", answer: true, explain: "H là nguyên tố đầu tiên, Z = 1." },
-  { q: "Sodium (Na) là phi kim.", answer: false, explain: "Na là kim loại kiềm, nhóm 1." },
-  { q: "Chlorine (Cl) thuộc nhóm 17, chu kỳ 3.", answer: true, explain: "Cl là halogen, nhóm 17." },
-  { q: "Nguyên tử khối của Oxygen là 12.011.", answer: false, explain: "12.011 là của Carbon. Oxygen là 15.999." },
-  { q: "Carbon (C) có cấu hình electron 1s² 2s² 2p².", answer: true, explain: "Đúng với Z = 6." }
-];
-
-// ---------- STATE ----------
-let order = [...ELEMENTS.keys()];
-let current = 0;
-let isFlipped = false;
-let quizMode = "mcq"; // 'mcq' | 'tf'
-let quizIndex = 0, quizScore = 0, quizAnswered = false;
-let authMode = "login";
-
+/* CHEMFLASH — SPA + Auth + Flashcard + Quiz + Sound + Ranks (ES6, no backend) */
+"use strict";
 const $ = (id) => document.getElementById(id);
-const homeSection = $("homeSection"), studySection = $("studySection"), quizSection = $("quizSection");
-const elementGrid = $("elementGrid"), flashcard = $("flashcard"), flashcardInner = $("flashcardInner");
-const progressText = $("progressText"), progressFill = $("progressFill");
 
-// ============================================================
-// ÂM THANH XỊN — Web Audio API, nhiều lớp, có envelope
-// ============================================================
-let soundOn = localStorage.getItem("pf_sound") !== "off";
-let audioCtx = null, masterGain = null;
+/* ---------- DATA ---------- */
+const ELEMENTS = [
+  { name:"Hydrogen", sym:"H", num:1, mass:"1.008", group:"1", period:"1", type:"Phi kim", color:"Cyan", c:"#22d3ee", glow:"rgba(34,211,238,.5)", fun:"Hydrogen là nguyên tố nhẹ nhất trong bảng tuần hoàn.", col:1, row:1 },
+  { name:"Carbon", sym:"C", num:6, mass:"12.011", group:"14", period:"2", type:"Phi kim", color:"Xanh lá", c:"#34d399", glow:"rgba(52,211,153,.5)", fun:"Carbon là nền tảng của mọi sự sống và kim cương.", col:14, row:2 },
+  { name:"Oxygen", sym:"O", num:8, mass:"15.999", group:"16", period:"2", type:"Phi kim", color:"Xanh dương", c:"#60a5fa", glow:"rgba(96,165,250,.5)", fun:"Oxygen chiếm ~21% khí quyển Trái Đất.", col:16, row:2 },
+  { name:"Sodium", sym:"Na", num:11, mass:"22.990", group:"1", period:"3", type:"Kim loại kiềm", color:"Vàng cam", c:"#fbbf24", glow:"rgba(251,191,36,.5)", fun:"Sodium phản ứng mạnh với nước, có trong muối ăn.", col:1, row:3 },
+  { name:"Chlorine", sym:"Cl", num:17, mass:"35.45", group:"17", period:"3", type:"Halogen", color:"Tím", c:"#a855f7", glow:"rgba(168,85,247,.5)", fun:"Chlorine dùng khử trùng nước và là halogen điển hình.", col:17, row:3 },
+];
 
-function getCtx() {
-  if (!audioCtx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return null;
-    audioCtx = new AC();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0.5;
-    // Reverb giả: delay nhẹ cho sang
-    const delay = audioCtx.createDelay();
-    delay.delayTime.value = 0.09;
-    const fb = audioCtx.createGain(); fb.gain.value = 0.22;
-    const wet = audioCtx.createGain(); wet.gain.value = 0.18;
-    masterGain.connect(audioCtx.destination);
-    masterGain.connect(delay); delay.connect(fb); fb.connect(delay);
-    delay.connect(wet); wet.connect(audioCtx.destination);
+/* ---------- SOUND MANAGER (Web Audio) ---------- */
+let AC=null, master=null;
+let soundOn = localStorage.getItem("cf_sound") !== "off";
+let volume = parseInt(localStorage.getItem("cf_vol") || "60", 10);
+function ctx(){
+  if(!AC){
+    const A = window.AudioContext || window.webkitAudioContext;
+    if(!A) return null;
+    AC = new A(); master = AC.createGain();
+    master.gain.value = (volume/100)*0.6;
+    master.connect(AC.destination);
   }
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  return audioCtx;
+  if(AC.state==="suspended") AC.resume();
+  return AC;
 }
-
-// 1 nốt mượt: attack/release, vibrato nhẹ
-function tone(freq, { dur = 0.15, type = "sine", vol = 0.25, delay = 0, slideTo = null } = {}) {
-  if (!soundOn) return;
-  try {
-    const ctx = getCtx(); if (!ctx) return;
-    const t0 = ctx.currentTime + delay;
-    const osc = ctx.createOscillator(), g = ctx.createGain();
-    osc.type = type; osc.frequency.setValueAtTime(freq, t0);
-    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.015);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(g); g.connect(masterGain);
-    osc.start(t0); osc.stop(t0 + dur + 0.05);
-  } catch (e) {}
+function tone(f,{d=.15,t="sine",v=.25,dl=0,slide=null}={}){
+  if(!soundOn) return;
+  try{
+    const c=ctx(); if(!c) return;
+    const t0=c.currentTime+dl, o=c.createOscillator(), g=c.createGain();
+    o.type=t; o.frequency.setValueAtTime(f,t0);
+    if(slide) o.frequency.exponentialRampToValueAtTime(slide,t0+d);
+    g.gain.setValueAtTime(.0001,t0);
+    g.gain.exponentialRampToValueAtTime(v,t0+.015);
+    g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+    o.connect(g); g.connect(master); o.start(t0); o.stop(t0+d+.05);
+  }catch(e){}
 }
+const S = {
+  click(){ tone(760,{d:.06,t:"triangle",v:.15}); },
+  hover(){ tone(1200,{d:.03,v:.04}); },
+  flip(){ tone(320,{d:.18,v:.16,slide:720}); },
+  move(){ tone(520,{d:.08,t:"triangle",v:.14,slide:680}); },
+  good(){ [523,659,784,1046].forEach((f,i)=>tone(f,{d:.2,v:.2,dl:i*.09})); },
+  bad(){ tone(180,{d:.25,t:"sawtooth",v:.09,slide:120}); },
+  win(){ [523,587,659,784,880,1046].forEach((f,i)=>tone(f,{d:.24,t:"triangle",v:.2,dl:i*.11})); },
+  page(){ tone(440,{d:.07,t:"sine",v:.1,slide:660}); },
+};
+function setVol(v){ volume=v; localStorage.setItem("cf_vol",v); if(master) master.gain.value=(v/100)*0.6; }
 
-// Noise whoosh cho lật/trộn thẻ
-function whoosh(delay = 0, dur = 0.22) {
-  if (!soundOn) return;
-  try {
-    const ctx = getCtx(); if (!ctx) return;
-    const t0 = ctx.currentTime + delay;
-    const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-    const src = ctx.createBufferSource(); src.buffer = buf;
-    const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.setValueAtTime(600, t0);
-    f.frequency.exponentialRampToValueAtTime(2800, t0 + dur); f.Q.value = 1.1;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.18, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    src.connect(f); f.connect(g); g.connect(masterGain);
-    src.start(t0);
-  } catch (e) {}
+/* ---------- TOAST + CONFETTI ---------- */
+function toast(msg){
+  const t=document.createElement("div"); t.className="toast"; t.textContent=msg;
+  $("toasts").appendChild(t); setTimeout(()=>t.remove(),2600);
 }
-
-const soundClick = () => { tone(880, { dur: 0.07, type: "triangle", vol: 0.18 }); tone(1320, { dur: 0.05, vol: 0.08, delay: 0.02 }); };
-const soundFlip = () => { whoosh(0, 0.2); tone(320, { dur: 0.18, type: "sine", vol: 0.16, slideTo: 720 }); };
-const soundNext = () => { tone(500, { dur: 0.09, type: "triangle", vol: 0.16, slideTo: 680 }); };
-const soundShuffle = () => { whoosh(0, 0.3); [523, 659, 784, 1046].forEach((f, i) => tone(f, { dur: 0.1, type: "triangle", vol: 0.14, delay: i * 0.06 })); };
-const soundCorrect = () => { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, { dur: 0.22, type: "sine", vol: 0.22, delay: i * 0.09 })); tone(2093, { dur: 0.3, vol: 0.06, delay: 0.36 }); };
-const soundWrong = () => { tone(196, { dur: 0.28, type: "sawtooth", vol: 0.1, slideTo: 130 }); tone(98, { dur: 0.3, type: "square", vol: 0.05, delay: 0.05 }); };
-const soundWin = () => { [523, 587, 659, 784, 880, 1046].forEach((f, i) => tone(f, { dur: 0.25, type: "triangle", vol: 0.2, delay: i * 0.11 })); };
-const soundAuth = () => { tone(660, { dur: 0.12, vol: 0.18 }); tone(990, { dur: 0.2, vol: 0.18, delay: 0.1 }); };
-
-function updateSoundBtn() { $("soundBtn").textContent = soundOn ? "🔊" : "🔇"; }
-
-// ---------- THEME ----------
-function initTheme() {
-  const saved = localStorage.getItem("pf_theme") || "light";
-  document.documentElement.setAttribute("data-theme", saved);
-  $("themeBtn").textContent = saved === "dark" ? "☀️" : "🌙";
-}
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute("data-theme");
-  const next = cur === "dark" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", next);
-  localStorage.setItem("pf_theme", next);
-  $("themeBtn").textContent = next === "dark" ? "☀️" : "🌙";
-  soundClick();
-}
-
-// ============================================================
-// TÀI KHOẢN (localStorage — demo, không thay backend thật)
-// ============================================================
-function getUsers() { try { return JSON.parse(localStorage.getItem("pf_users") || "{}"); } catch (e) { return {}; } }
-function setUsers(u) { localStorage.setItem("pf_users", JSON.stringify(u)); }
-function currentUser() { return localStorage.getItem("pf_session") || null; }
-function hashPw(s) {
-  // băm nhẹ djb2 + salt, chỉ để demo, KHÔNG an toàn thật
-  const salt = "pf_h2a::";
-  s = salt + s;
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
-  return "h" + h.toString(16);
-}
-function updateAuthUI() {
-  const u = currentUser();
-  const chip = $("userChip"), btn = $("authBtn"), welcome = $("welcomeBox");
-  if (u) {
-    chip.classList.remove("hidden"); btn.classList.add("hidden");
-    $("userName").textContent = u;
-    $("userAvatar").textContent = "🧪";
-    const users = getUsers();
-    const me = users[u];
-    const best = me ? Math.max(me.bestMCQ || 0, me.bestTF || 0) : 0;
-    welcome.classList.remove("hidden");
-    welcome.textContent = `👋 Chào ${u}! Điểm cao nhất của bạn: ${best}/5 — cố lên!`;
-  } else {
-    chip.classList.add("hidden"); btn.classList.remove("hidden");
-    welcome.classList.add("hidden");
+function confetti(n=40){
+  const box=$("confetti"), colors=["#22d3ee","#a855f7","#34d399","#fbbf24","#60a5fa"];
+  for(let i=0;i<n;i++){
+    const s=document.createElement("span"); s.className="cf";
+    s.style.left=Math.random()*100+"vw";
+    s.style.background=colors[i%colors.length];
+    s.style.animationDuration=(1.6+Math.random()*1.4)+"s";
+    box.appendChild(s); setTimeout(()=>s.remove(),3200);
   }
 }
-function openAuth() { $("authOverlay").classList.remove("hidden"); $("authError").textContent = ""; soundClick(); }
-function closeAuth() { $("authOverlay").classList.add("hidden"); }
-function setAuthMode(m) {
-  authMode = m;
-  $("tabLogin").classList.toggle("active", m === "login");
-  $("tabRegister").classList.toggle("active", m === "register");
-  $("authSubmit").textContent = m === "login" ? "Đăng nhập" : "Tạo tài khoản";
+
+/* ---------- STORE (LocalStorage) ---------- */
+const blankStats = () => ({ score:0, best:0, answered:0, correct:0, wrong:0, studied:[], maxCombo:0 });
+function getUsers(){ try{return JSON.parse(localStorage.getItem("cf_users")||"{}")}catch(e){return{}} }
+function setUsers(u){ localStorage.setItem("cf_users",JSON.stringify(u)); }
+function session(){ return localStorage.getItem("cf_session"); }
+function hash(s){ let h=5381; s="cf::"+s; for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))>>>0; return "h"+h.toString(16); }
+function myStats(){
+  const u=session(), users=getUsers();
+  if(u && users[u]) return users[u].stats;
+  try{ return JSON.parse(localStorage.getItem("cf_guest")||"null") || blankStats(); }catch(e){ return blankStats(); }
 }
-function submitAuth() {
-  const u = $("authUser").value.trim();
-  const p = $("authPass").value;
-  const err = $("authError");
-  if (!/^[a-zA-Z0-9_.]{3,24}$/.test(u)) { err.textContent = "Tên đăng nhập 3–24 ký tự, chỉ chữ/số/._"; return; }
-  if (p.length < 4) { err.textContent = "Mật khẩu ít nhất 4 ký tự."; return; }
-  const users = getUsers();
-  if (authMode === "register") {
-    if (users[u]) { err.textContent = "Tên này đã có người dùng, chọn tên khác."; return; }
-    users[u] = { hash: hashPw(p), created: Date.now(), bestMCQ: 0, bestTF: 0, plays: 0 };
-    setUsers(users);
-    localStorage.setItem("pf_session", u);
-    soundAuth(); updateAuthUI(); closeAuth();
-  } else {
-    if (!users[u] || users[u].hash !== hashPw(p)) { err.textContent = "Sai tên đăng nhập hoặc mật khẩu."; soundWrong(); return; }
-    localStorage.setItem("pf_session", u);
-    soundAuth(); updateAuthUI(); closeAuth();
-  }
+function saveStats(st){
+  const u=session(), users=getUsers();
+  if(u && users[u]){ users[u].stats=st; setUsers(users); }
+  else localStorage.setItem("cf_guest",JSON.stringify(st));
+  renderHUD();
 }
-function logout() { localStorage.removeItem("pf_session"); soundClick(); updateAuthUI(); }
-function saveScore(mode, score) {
-  const u = currentUser(); if (!u) return null;
-  const users = getUsers(); if (!users[u]) return null;
-  users[u].plays = (users[u].plays || 0) + 1;
-  const key = mode === "mcq" ? "bestMCQ" : "bestTF";
-  if (score > (users[u][key] || 0)) users[u][key] = score;
-  setUsers(users); updateAuthUI();
-  return users[u][key];
+function addStudied(sym){
+  const st=myStats();
+  if(!st.studied.includes(sym)){ st.studied.push(sym); saveStats(st); }
+  renderFlash(); renderRanks(); renderHomeStats();
 }
 
-// ---------- GRID + NAV ----------
-function renderGrid() {
-  elementGrid.innerHTML = "";
-  ELEMENTS.forEach((el, i) => {
-    const div = document.createElement("div");
-    div.className = "mini-card";
-    div.innerHTML = `<div class="mini-num">${el.number}</div><div class="mini-sym">${el.symbol}</div><div class="mini-name">${el.name}</div>`;
-    div.addEventListener("click", () => {
-      soundClick(); ripple(div, event);
-      const pos = order.indexOf(i);
-      current = pos === -1 ? 0 : pos;
-      showStudy();
-    });
-    elementGrid.appendChild(div);
-  });
-}
-function showSection(el) {
-  [homeSection, studySection, quizSection].forEach(s => s.classList.add("hidden"));
-  el.classList.remove("hidden");
-  el.classList.remove("section-enter"); void el.offsetWidth; el.classList.add("section-enter");
-}
-function showStudy() { showSection(studySection); renderCard(); studySection.scrollIntoView({ behavior: "smooth" }); }
-function showHome() { showSection(homeSection); window.scrollTo({ top: 0, behavior: "smooth" }); }
-function showQuiz() { showSection(quizSection); startQuiz(); quizSection.scrollIntoView({ behavior: "smooth" }); }
-
-// ---------- FLASHCARD MƯỢT ----------
-function currentElement() { return ELEMENTS[order[current]]; }
-function renderCard() {
-  const el = currentElement();
-  isFlipped = false;
-  flashcard.classList.remove("flipped");
-  $("cardNumberFront").textContent = el.number;
-  $("cardSymbolFront").textContent = el.symbol;
-  $("cardNameFront").textContent = el.name;
-  $("cardNameBack").textContent = el.name;
-  $("cardSymbolBack").textContent = el.symbol;
-  $("infoNumber").textContent = el.number;
-  $("infoMass").textContent = el.mass;
-  $("infoGroup").textContent = el.group;
-  $("infoPeriod").textContent = el.period;
-  $("infoType").textContent = el.type;
-  $("infoElectron").textContent = el.electron;
-  progressText.textContent = `Nguyên tố ${current + 1} / ${ELEMENTS.length}`;
-  progressFill.style.width = `${((current + 1) / ELEMENTS.length) * 100}%`;
-}
-function flipCard() {
-  isFlipped = !isFlipped;
-  flashcard.classList.toggle("flipped", isFlipped);
-  soundFlip();
-}
-function slideTo(dir, fn) {
-  flashcard.classList.remove("slide-left", "slide-right");
-  void flashcard.offsetWidth;
-  flashcard.classList.add(dir === 1 ? "slide-left" : "slide-right");
-  fn();
-}
-function nextCard() { slideTo(1, () => { current = (current + 1) % order.length; renderCard(); }); soundNext(); }
-function prevCard() { slideTo(-1, () => { current = (current - 1 + order.length) % order.length; renderCard(); }); soundNext(); }
-function shuffleCards() {
-  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
-  current = 0; renderCard(); soundShuffle();
-}
-
-// Nghiêng thẻ 3D theo chuột (mượt, chỉ desktop)
-document.addEventListener("mousemove", (e) => {
-  if (studySection.classList.contains("hidden") || isFlipped) return;
-  const r = flashcard.getBoundingClientRect();
-  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-  const dx = (e.clientX - cx) / r.width, dy = (e.clientY - cy) / r.height;
-  if (Math.abs(dx) < 0.6 && Math.abs(dy) < 0.6) {
-    flashcardInner.style.transform = `rotateY(${dx * 8}deg) rotateX(${-dy * 8}deg)`;
-  } else flashcardInner.style.transform = "";
+/* ---------- INTRO + PARTICLES ---------- */
+window.addEventListener("load", ()=>{
+  let p=0;
+  const iv=setInterval(()=>{ p+=20; $("introFill").style.width=p+"%";
+    if(p>=100){ clearInterval(iv); setTimeout(()=>$("intro").classList.add("hide"),250); }
+  },220);
 });
-// Khi lật thì reset tilt để CSS flip chiếm quyền
-const _flip = flipCard;
-
-// ---------- RIPPLE ----------
-function ripple(host, e) {
-  try {
-    const rect = host.getBoundingClientRect();
-    const s = document.createElement("span");
-    s.className = "ripple";
-    const size = Math.max(rect.width, rect.height) * 2;
-    s.style.width = s.style.height = size + "px";
-    const x = (e && e.clientX ? e.clientX - rect.left : rect.width / 2);
-    const y = (e && e.clientY ? e.clientY - rect.top : rect.height / 2);
-    s.style.left = x + "px"; s.style.top = y + "px";
-    host.appendChild(s); setTimeout(() => s.remove(), 600);
-  } catch (err) {}
-}
-document.querySelectorAll(".ripple-host").forEach(b => b.addEventListener("pointerdown", (e) => ripple(b, e)));
-
-// ---------- QUIZ 2 CHẾ ĐỘ ----------
-function currentQuizList() { return quizMode === "mcq" ? QUIZ_MCQ : QUIZ_TF; }
-function setQuizMode(m) {
-  quizMode = m;
-  $("tabMcq").classList.toggle("active", m === "mcq");
-  $("tabTf").classList.toggle("active", m === "tf");
-  soundClick(); startQuiz();
-}
-function startQuiz() {
-  quizIndex = 0; quizScore = 0;
-  $("quizBox").classList.remove("hidden");
-  $("quizResult").classList.add("hidden");
-  renderQuiz();
-}
-function renderQuiz() {
-  const list = currentQuizList();
-  const item = list[quizIndex];
-  quizAnswered = false;
-  $("quizCounter").textContent = `Câu ${quizIndex + 1} / ${list.length} • ${quizMode === "mcq" ? "Trắc nghiệm" : "Đúng/Sai"}`;
-  $("quizProgress").style.width = `${(quizIndex / list.length) * 100}%`;
-  $("quizQuestion").textContent = item.q;
-  $("quizFeedback").textContent = "";
-  $("quizFeedback").className = "quiz-feedback";
-  $("quizNextBtn").classList.add("hidden");
-  const box = $("quizAnswers");
-  box.innerHTML = "";
-  if (quizMode === "mcq") {
-    const letters = ["A", "B", "C", "D"];
-    item.options.forEach((opt, i) => {
-      const btn = document.createElement("button");
-      btn.className = "quiz-opt";
-      btn.textContent = `${letters[i]}. ${opt}`;
-      btn.addEventListener("click", () => answerMcq(i, btn));
-      box.appendChild(btn);
-    });
-  } else {
-    const row = document.createElement("div");
-    row.className = "tf-row";
-    [["✅ Đúng", true, "true"], ["❌ Sai", false, "false"]].forEach(([label, val, cls]) => {
-      const btn = document.createElement("button");
-      btn.className = `quiz-opt tf-btn ${cls}`;
-      btn.textContent = label;
-      btn.addEventListener("click", () => answerTf(val, btn));
-      row.appendChild(btn);
-    });
-    box.appendChild(row);
+(function particles(){
+  const cv=$("particles"), c=cv.getContext("2d");
+  let W,H,pts=[];
+  function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight;
+    pts=Array.from({length: innerWidth<640?35:65},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.8+.6}));
   }
-}
-function lockQuiz() { document.querySelectorAll(".quiz-opt").forEach(b => (b.disabled = true)); }
-function afterAnswer(isRight, btnEl, correctLabel, explain) {
-  const list = currentQuizList();
-  lockQuiz();
-  if (isRight) {
-    btnEl.classList.add("correct"); quizScore++;
-    $("quizFeedback").textContent = "✓ Chính xác!" + (explain ? " " + explain : "");
-    $("quizFeedback").classList.add("ok"); soundCorrect();
-  } else {
-    btnEl.classList.add("wrong");
-    document.querySelectorAll(".quiz-opt").forEach(b => { if (b.dataset.correct === "1") b.classList.add("correct"); });
-    // fallback cho MCQ: tô đáp án đúng
-    if (quizMode === "mcq") {
-      const btns = document.querySelectorAll(".quiz-opt");
-      const ans = currentQuizList()[quizIndex].answer;
-      if (btns[ans]) btns[ans].classList.add("correct");
+  rs(); addEventListener("resize",rs);
+  (function loop(){
+    c.clearRect(0,0,W,H);
+    pts.forEach(a=>{ a.x+=a.vx; a.y+=a.vy;
+      if(a.x<0||a.x>W)a.vx*=-1; if(a.y<0||a.y>H)a.vy*=-1;
+      c.beginPath(); c.arc(a.x,a.y,a.r,0,7); c.fillStyle="rgba(34,211,238,.55)"; c.fill();
+    });
+    // nối phân tử nhẹ
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=dx*dx+dy*dy;
+      if(d<12000){ c.beginPath(); c.moveTo(pts[i].x,pts[i].y); c.lineTo(pts[j].x,pts[j].y);
+        c.strokeStyle="rgba(168,85,247,.12)"; c.lineWidth=1; c.stroke(); }
     }
-    $("quizFeedback").textContent = `✗ Chưa chính xác! Đáp án: ${correctLabel}.` + (explain ? " " + explain : "");
-    $("quizFeedback").classList.add("no"); soundWrong();
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ---------- SPA NAV ---------- */
+function go(page){
+  document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));
+  $("page-"+page).classList.add("active");
+  document.querySelectorAll(".nav-link").forEach(b=>b.classList.toggle("active",b.dataset.nav===page));
+  $("nav").classList.remove("open");
+  S.page();
+  if(page==="ranks") renderRanks();
+  if(page==="account") renderAccount();
+  if(page==="home") renderHomeStats();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.nav)));
+$("burger").addEventListener("click",()=>{ $("nav").classList.toggle("open"); S.click(); });
+
+/* ---------- THEME ---------- */
+function initTheme(){
+  const t=localStorage.getItem("cf_theme")||"dark";
+  document.documentElement.setAttribute("data-theme",t);
+  $("themeBtn").textContent = t==="dark" ? "☀️" : "🌙";
+}
+$("themeBtn").addEventListener("click",()=>{
+  const c=document.documentElement.getAttribute("data-theme");
+  const n=c==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",n);
+  localStorage.setItem("cf_theme",n);
+  $("themeBtn").textContent=n==="dark"?"☀️":"🌙"; S.click();
+});
+
+/* ---------- SOUND UI ---------- */
+function syncSound(){ $("soundBtn").textContent=soundOn?"🔊":"🔇"; $("muteBtn").textContent=soundOn?"Tắt tiếng":"Bật tiếng"; }
+$("soundBtn").addEventListener("click",()=>{ soundOn=!soundOn; localStorage.setItem("cf_sound",soundOn?"on":"off"); syncSound(); if(soundOn)S.click(); });
+$("muteBtn").addEventListener("click",()=>{ soundOn=!soundOn; localStorage.setItem("cf_sound",soundOn?"on":"off"); syncSound(); });
+$("vol").value=volume;
+$("vol").addEventListener("input",e=>setVol(+e.target.value));
+document.addEventListener("pointerdown",()=>ctx(),{once:true});
+
+/* ---------- AUTH ---------- */
+let authMode="login";
+function setAuth(m){
+  authMode=m;
+  $("tLogin").classList.toggle("active",m==="login");
+  $("tReg").classList.toggle("active",m==="register");
+  $("regExtra").classList.toggle("hidden",m==="login");
+  $("aGo").textContent=m==="login"?"Đăng nhập":"Tạo tài khoản";
+  $("aErr").textContent="";
+}
+$("tLogin").addEventListener("click",()=>{setAuth("login");S.click();});
+$("tReg").addEventListener("click",()=>{setAuth("register");S.click();});
+$("aGo").addEventListener("click",()=>{
+  const u=$("aUser").value.trim(), p=$("aPass").value, p2=$("aPass2").value;
+  const err=$("aErr"), users=getUsers();
+  if(!u||!p){ err.textContent="Không được bỏ trống tên và mật khẩu."; return; }
+  if(authMode==="register"){
+    if(p.length<4){ err.textContent="Mật khẩu phải ít nhất 4 ký tự."; return; }
+    if(p!==p2){ err.textContent="Mật khẩu xác nhận chưa giống nhau."; return; }
+    if(users[u]){ err.textContent="Tên này đã có người dùng."; return; }
+    users[u]={hash:hash(p),created:Date.now(),stats:blankStats()};
+    setUsers(users); localStorage.setItem("cf_session",u);
+    toast("🎉 Tạo tài khoản thành công!"); S.win(); renderAccount(); renderHUD();
+  }else{
+    if(!users[u]||users[u].hash!==hash(p)){ err.textContent="❌ Tên hoặc mật khẩu không chính xác!"; S.bad(); return; }
+    localStorage.setItem("cf_session",u);
+    toast(`👋 Chào mừng trở lại, ${u}!`); S.good(); renderAccount(); renderHUD();
   }
-  $("quizProgress").style.width = `${((quizIndex + 1) / list.length) * 100}%`;
-  $("quizNextBtn").textContent = quizIndex === list.length - 1 ? "Xem kết quả →" : "Câu tiếp theo →";
-  $("quizNextBtn").classList.remove("hidden");
+});
+$("logout").addEventListener("click",()=>{ localStorage.removeItem("cf_session"); toast("Đã đăng xuất."); S.click(); renderAccount(); renderHUD(); });
+function renderAccount(){
+  const u=session(), users=getUsers();
+  const logged = u && users[u];
+  $("authForms").classList.toggle("hidden",!!logged);
+  $("authInfo").classList.toggle("hidden",!logged);
+  if(logged){
+    $("meName").textContent=u;
+    const st=users[u].stats;
+    const acc = st.answered? Math.round(st.correct/st.answered*100):0;
+    $("meMeta").textContent=`Tổng ${st.score} điểm • Đúng ${st.correct} • Sai ${st.wrong} • Chính xác ${acc}%`;
+    $("meStats").innerHTML=`
+      <div><b>${st.score}</b><span>tổng điểm</span></div>
+      <div><b>${st.best}</b><span>cao nhất</span></div>
+      <div><b>${st.correct}</b><span>câu đúng</span></div>
+      <div><b>${st.maxCombo}</b><span>combo cao nhất</span></div>`;
+  }
 }
-function answerMcq(i, btn) {
-  if (quizAnswered) return; quizAnswered = true;
-  const item = currentQuizList()[quizIndex];
-  afterAnswer(i === item.answer, btn, item.options[item.answer], "");
-}
-function answerTf(val, btn) {
-  if (quizAnswered) return; quizAnswered = true;
-  const item = currentQuizList()[quizIndex];
-  // đánh dấu nút đúng để afterAnswer tô
-  document.querySelectorAll(".quiz-opt").forEach(b => {
-    const isTrueBtn = b.textContent.includes("Đúng");
-    if ((item.answer && isTrueBtn) || (!item.answer && !isTrueBtn)) b.dataset.correct = "1";
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  $("homeElements").innerHTML="";
+  ELEMENTS.forEach((el,i)=>{
+    const d=document.createElement("div");
+    d.className="el-card"; d.style.setProperty("--glow",el.glow); d.style.setProperty("--glow-c",el.c);
+    d.innerHTML=`<div class="el-num">${el.num}</div><div class="el-sym">${el.sym}</div><div class="el-name">${el.name}</div>`;
+    d.addEventListener("click",()=>{ S.click(); flashIdx=i; go("flash"); renderFlash(); });
+    $("homeElements").appendChild(d);
   });
-  afterAnswer(val === item.answer, btn, item.answer ? "Đúng" : "Sai", item.explain);
 }
-function nextQuiz() {
-  soundClick();
-  const list = currentQuizList();
-  if (quizIndex < list.length - 1) { quizIndex++; renderQuiz(); }
-  else showQuizResult();
+function renderHomeStats(){
+  const st=myStats();
+  $("statBest").textContent=st.best;
+  $("statAcc").textContent=(st.answered?Math.round(st.correct/st.answered*100):0)+"%";
 }
-function showQuizResult() {
-  $("quizBox").classList.add("hidden");
-  $("quizResult").classList.remove("hidden");
-  const list = currentQuizList();
-  $("quizScore").textContent = `${quizScore}/${list.length}`;
-  let msg = quizScore === list.length ? "🎉 Xuất sắc! Bạn thuộc cả 5 nguyên tố!"
-    : quizScore >= 4 ? "👏 Rất tốt! Ôn thêm chút nữa là hoàn hảo."
-    : quizScore >= 3 ? "💪 Khá rồi! Lật lại flashcard để nhớ lâu hơn."
-    : "📖 Đừng nản! Quay lại học thẻ rồi thử lại nhé.";
-  $("quizMessage").textContent = `Bạn đạt ${quizScore}/${list.length} câu. ${msg}`;
-  const best = saveScore(quizMode, quizScore);
-  $("bestScore").textContent = currentUser()
-    ? `🏆 Điểm cao nhất (${quizMode === "mcq" ? "Trắc nghiệm" : "Đúng/Sai"}) của ${currentUser()}: ${best}/5`
-    : "💡 Đăng nhập để lưu điểm cao nhất trên máy này.";
-  if (quizScore === list.length) soundWin();
-}
+function renderHUD(){ $("hudScore").textContent=myStats().score; $("qBest").textContent=myStats().best; }
 
-// ---------- EVENTS ----------
-$("startBtn").addEventListener("click", (e) => { soundClick(); ripple(e.currentTarget, e); showStudy(); });
-$("homeQuizBtn").addEventListener("click", () => { soundClick(); showQuiz(); });
-$("homeBtn").addEventListener("click", () => { soundClick(); showHome(); });
-$("shuffleBtn").addEventListener("click", shuffleCards);
-$("quizBtn").addEventListener("click", () => { soundClick(); showQuiz(); });
-$("backToStudyBtn").addEventListener("click", () => { soundClick(); showStudy(); });
-$("quizStudyBtn").addEventListener("click", () => { soundClick(); showStudy(); });
-$("quizRetryBtn").addEventListener("click", () => { soundClick(); startQuiz(); });
-$("quizNextBtn").addEventListener("click", nextQuiz);
-$("tabMcq").addEventListener("click", () => setQuizMode("mcq"));
-$("tabTf").addEventListener("click", () => setQuizMode("tf"));
-
-$("prevBtn").addEventListener("click", prevCard);
-$("nextBtn").addEventListener("click", nextCard);
-$("flipBtn").addEventListener("click", () => { flashcardInner.style.transform = ""; flipCard(); });
-flashcard.addEventListener("click", () => { flashcardInner.style.transform = ""; flipCard(); });
-flashcard.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flipCard(); }
-  if (e.key === "ArrowRight") nextCard();
-  if (e.key === "ArrowLeft") prevCard();
+/* ---------- FLASHCARD ---------- */
+let flashIdx=0, flipped=false;
+function renderFlash(){
+  const el=ELEMENTS[flashIdx];
+  flipped=false; $("card").classList.remove("flip");
+  $("fNum").textContent=el.num; $("fSym").textContent=el.sym; $("fSym").style.setProperty("--fc",el.c);
+  document.querySelector(".front").style.setProperty("--fc",el.c);
+  $("fName").textContent=el.name;
+  $("bSym").textContent=el.sym; $("bSym").style.color=el.c;
+  $("bName").textContent=el.name.toUpperCase();
+  $("bNum").textContent=el.num; $("bMass").textContent=el.mass;
+  $("bGroup").textContent=el.group; $("bPeriod").textContent=el.period;
+  $("bType").textContent=el.type; $("bColor").textContent=el.color;
+  $("bFun").textContent=el.fun;
+  const st=myStats();
+  const seen = new Set([...st.studied, el.sym]);
+  $("flashCount").textContent=`Bạn đã khám phá ${seen.size}/5 nguyên tố`;
+  $("flashBar").style.width=(seen.size/5*100)+"%";
+  const sc=seen.size*20;
+  $("studyScore").textContent=sc;
+  $("doneBox").classList.toggle("hidden",seen.size<5);
+  if(seen.size===5 && !st._cheered){ st._cheered=true; saveStats(st); S.win(); confetti(50); toast("🎉 Bạn đã hoàn thành bộ Flashcard! 100/100"); }
+}
+function flip(){
+  flipped=!flipped;
+  $("card").classList.toggle("flip",flipped); S.flip();
+  if(flipped) addStudied(ELEMENTS[flashIdx].sym);
+}
+$("card").addEventListener("click",flip);
+$("flipEl").addEventListener("click",flip);
+$("card").addEventListener("keydown",e=>{
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}
+  if(e.key==="ArrowRight")$("nextEl").click();
+  if(e.key==="ArrowLeft")$("prevEl").click();
 });
-// Vuốt trên mobile
-let touchX = null;
-flashcard.addEventListener("touchstart", (e) => { touchX = e.touches[0].clientX; }, { passive: true });
-flashcard.addEventListener("touchend", (e) => {
-  if (touchX === null) return;
-  const dx = e.changedTouches[0].clientX - touchX;
-  if (Math.abs(dx) > 45) { dx < 0 ? nextCard() : prevCard(); }
-  touchX = null;
-}, { passive: true });
+$("nextEl").addEventListener("click",()=>{ flashIdx=(flashIdx+1)%ELEMENTS.length; S.move(); renderFlash(); });
+$("prevEl").addEventListener("click",()=>{ flashIdx=(flashIdx-1+ELEMENTS.length)%ELEMENTS.length; S.move(); renderFlash(); });
+let tx=null;
+$("card").addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
+$("card").addEventListener("touchend",e=>{
+  if(tx===null)return; const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>45)(dx<0?$("nextEl"):$("prevEl")).click(); tx=null;
+},{passive:true});
 
-$("themeBtn").addEventListener("click", toggleTheme);
-$("soundBtn").addEventListener("click", () => {
-  soundOn = !soundOn;
-  localStorage.setItem("pf_sound", soundOn ? "on" : "off");
-  updateSoundBtn(); if (soundOn) soundClick();
+/* ---------- PERIODIC TABLE ---------- */
+let selPT=0;
+function renderTable(){
+  const g=$("ptable"); g.innerHTML="";
+  for(let r=1;r<=3;r++)for(let c=1;c<=18;c++){
+    const el=ELEMENTS.find(e=>e.row===r&&e.col===c);
+    const d=document.createElement("div");
+    d.className="pt-cell"+(el?" on":"");
+    if(el){ d.style.setProperty("--glow",el.glow);
+      d.innerHTML=`<small>${el.num}</small>${el.sym}`;
+      d.addEventListener("click",()=>selectPT(el));
+    }
+    g.appendChild(d);
+  }
+  selectPT(ELEMENTS[selPT]);
+}
+function selectPT(el){
+  selPT=ELEMENTS.indexOf(el);
+  document.querySelectorAll(".pt-cell.on").forEach(x=>x.classList.remove("sel"));
+  [...document.querySelectorAll(".pt-cell.on")][selPT]?.classList.add("sel");
+  $("pdetail").classList.remove("hidden");
+  $("pdSym").textContent=el.sym; $("pdSym").style.color=el.c;
+  $("pdName").textContent=el.name;
+  $("pdMeta").textContent=`Z=${el.num} • Nhóm ${el.group} • Chu kỳ ${el.period} • ${el.type}`;
+  $("pdFun").textContent="💡 "+el.fun;
+  S.click();
+}
+$("pdStudy").addEventListener("click",()=>{ flashIdx=selPT; go("flash"); renderFlash(); });
+
+/* ---------- QUIZ ---------- */
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function makeQ(){
+  const el=rnd(ELEMENTS), t=Math.floor(Math.random()*5);
+  const names=ELEMENTS.map(e=>e.name);
+  if(t===0) return {q:`Nguyên tố nào có ký hiệu ${el.sym}?`,opts:shuffle([el.name,...shuffle(names.filter(n=>n!==el.name)).slice(0,3)]),ans:el.name};
+  if(t===1){ const e2=rnd(ELEMENTS); return {q:`Ký hiệu của ${e2.name} là gì?`,opts:shuffle([e2.sym,...shuffle(ELEMENTS.map(e=>e.sym).filter(s=>s!==e2.sym)).slice(0,3)]),ans:e2.sym}; }
+  if(t===2){ const e2=rnd(ELEMENTS); const pool=shuffle(ELEMENTS.map(e=>e.num).filter(n=>n!==e2.num)).slice(0,3);
+    return {q:`${e2.name} (${e2.sym}) có số hiệu nguyên tử là bao nhiêu?`,opts:shuffle([e2.num,...pool]).map(String),ans:String(e2.num)}; }
+  if(t===3){ const e2=rnd(ELEMENTS); const pool=shuffle(ELEMENTS.map(e=>e.mass).filter(m=>m!==e2.mass)).slice(0,3);
+    return {q:`Nguyên tử khối gần đúng của ${e2.name} là?`,opts:shuffle([e2.mass,...pool]),ans:e2.mass}; }
+  const e2=rnd(ELEMENTS);
+  return {q:`${e2.name} thuộc nhóm / chu kỳ nào?`,opts:shuffle([`Nhóm ${e2.group} – Chu kỳ ${e2.period}`,...shuffle(ELEMENTS.filter(e=>e!==e2).map(e=>`Nhóm ${e.group} – Chu kỳ ${e.period}`)).slice(0,3)]),ans:`Nhóm ${e2.group} – Chu kỳ ${e2.period}`};
+}
+let QQ=[],qi=0,qScore=0,streak=0,qLock=false;
+$("startQuiz").addEventListener("click",()=>{
+  QQ=Array.from({length:10},makeQ); qi=0; qScore=0; streak=0;
+  $("quizSetup").classList.add("hidden"); $("quizEnd").classList.add("hidden"); $("quizBox").classList.remove("hidden");
+  S.click(); renderQ();
 });
+function renderQ(){
+  qLock=false;
+  const q=QQ[qi];
+  $("qBar").style.width=(qi/10*100)+"%";
+  $("qCount").textContent=`Câu ${qi+1}/10`;
+  $("qText").textContent=q.q;
+  $("qFeed").textContent=""; $("qFeed").className="q-feed";
+  $("qNext").classList.add("hidden");
+  $("qScore").textContent=qScore;
+  const box=$("qOpts"); box.innerHTML="";
+  const L=["A","B","C","D"];
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement("button"); b.className="q-opt"; b.textContent=`${L[i]}. ${o}`;
+    b.addEventListener("click",()=>answer(o,b)); b.addEventListener("mouseenter",()=>S.hover(),{once:true});
+    box.appendChild(b);
+  });
+}
+function answer(pick,btn){
+  if(qLock)return; qLock=true;
+  const q=QQ[qi], st=myStats();
+  document.querySelectorAll(".q-opt").forEach(b=>b.disabled=true);
+  st.answered++;
+  if(pick===q.ans){
+    btn.classList.add("ok"); qScore+=10; streak++;
+    st.correct++; st.score+=10;
+    if(streak>=2){ $("qCombo").classList.remove("hidden"); $("qCombo").textContent=`🔥 COMBO x${streak}`; }
+    if(streak===5) toast("🔥 COMBO x5 — tuyệt vời!");
+    $("qFeed").textContent="✨ CHÍNH XÁC! Bạn thật sự hiểu Hóa học!";
+    $("qFeed").classList.add("ok"); S.good(); confetti(24);
+  }else{
+    btn.classList.add("bad"); streak=0; $("qCombo").classList.add("hidden");
+    st.wrong++;
+    document.querySelectorAll(".q-opt").forEach(b=>{ if(b.textContent.includes(q.ans)) b.classList.add("ok"); });
+    $("qFeed").textContent=`💥 CHƯA ĐÚNG! Đáp án chính xác là: ${q.ans}`;
+    S.bad();
+  }
+  st.maxCombo=Math.max(st.maxCombo||0,streak);
+  if(qScore>st.best)st.best=qScore;
+  saveStats(st);
+  $("qBar").style.width=((qi+1)/10*100)+"%";
+  $("qNext").classList.remove("hidden");
+}
+$("qNext").addEventListener("click",()=>{
+  S.click();
+  if(qi<QQ.length-1){ qi++; renderQ(); }
+  else{
+    $("quizBox").classList.add("hidden"); $("quizEnd").classList.remove("hidden");
+    $("qFinal").textContent=qScore;
+    let m = qScore===100 ? "🏆 PERFECT! 10/10 — Bậc thầy Hóa học!" : qScore>=80 ? "Xuất sắc! Gần chạm PERFECT." : qScore>=50 ? "Khá tốt! Ôn thêm flashcard nhé." : "Đừng nản, quay lại flashcard rồi thử lại.";
+    $("qMsg").textContent=`Bạn đạt ${qScore}/100. ${m}`;
+    if(qScore===100){ S.win(); confetti(80); } else if(qScore>=50) S.good();
+    $("quizSetup").classList.remove("hidden");
+  }
+});
+$("qRetry").addEventListener("click",()=>$("startQuiz").click());
 
-$("authBtn").addEventListener("click", openAuth);
-$("authClose").addEventListener("click", closeAuth);
-$("authOverlay").addEventListener("click", (e) => { if (e.target.id === "authOverlay") closeAuth(); });
-$("tabLogin").addEventListener("click", () => setAuthMode("login"));
-$("tabRegister").addEventListener("click", () => setAuthMode("register"));
-$("authSubmit").addEventListener("click", submitAuth);
-$("authPass").addEventListener("keydown", (e) => { if (e.key === "Enter") submitAuth(); });
-$("logoutBtn").addEventListener("click", logout);
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAuth(); });
+/* ---------- RANKS ---------- */
+const BADGES=[
+  {i:"🥉",n:"Nhà hóa học tập sự",d:"Trả lời đúng 1 câu",ok:s=>s.correct>=1},
+  {i:"🥈",n:"Nhà khám phá nguyên tố",d:"Học đủ 5 flashcard",ok:s=>s.studied.length>=5},
+  {i:"🥇",n:"Bậc thầy Hóa học",d:"Điểm cao nhất ≥ 80",ok:s=>s.best>=80},
+  {i:"⚛",n:"Nhà giả kim",d:"PERFECT 100 điểm",ok:s=>s.best>=100},
+];
+function renderRanks(){
+  const st=myStats();
+  const acc=st.answered?Math.round(st.correct/st.answered*100):0;
+  $("rankGrid").innerHTML=`
+    <div><b>${st.score}</b><span>tổng điểm</span></div>
+    <div><b>${st.best}</b><span>điểm cao nhất</span></div>
+    <div><b>${st.answered}</b><span>số câu đã làm</span></div>
+    <div><b>${st.correct}</b><span>số câu đúng</span></div>
+    <div><b>${st.wrong}</b><span>số câu sai</span></div>
+    <div><b>${acc}%</b><span>tỉ lệ chính xác</span></div>
+    <div><b>${st.studied.length}/5</b><span>flashcard đã học</span></div>
+    <div><b>x${st.maxCombo||0}</b><span>combo cao nhất</span></div>`;
+  $("badgeGrid").innerHTML=BADGES.map(b=>{
+    const un=b.ok(st);
+    return `<div class="badge${un?" un":""}"><div class="bi">${b.i}</div><b>${b.n}</b><small>${b.d}</small><small>${un?"Đã mở khóa":"Chưa mở"}</small></div>`;
+  }).join("");
+}
 
-// ---------- INIT ----------
-initTheme(); updateSoundBtn(); renderGrid(); renderCard(); updateAuthUI(); setAuthMode("login");
+/* ---------- INIT (kiểm tra tất cả) ---------- */
+setAuth("login"); initTheme(); syncSound();
+renderHome(); renderFlash(); renderTable(); renderRanks(); renderAccount(); renderHUD(); renderHomeStats();
