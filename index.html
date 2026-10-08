@@ -1,0 +1,279 @@
+Bạn hãy tạo cho tôi một website Flashcard học Hóa học về 5 nguyên tố trong bảng tuần hoàn, sử dụng hoàn toàn HTML + CSS + JavaScript thuần, không cần backend và không dùng framework.
+
+Mục tiêu:
+- Website có thể chạy trực tiếp trên GitHub Pages.
+- Chỉ cần các file:
+  - index.html
+  - style.css
+  - script.js
+- Không sử dụng thư viện trả phí.
+- Có giao diện hiện đại, đẹp, responsive, hoạt động tốt trên máy tính và điện thoại.
+- Code rõ ràng, dễ chỉnh sửa.
+
+5 nguyên tố trong flashcard:
+1. Hydrogen (H) – số hiệu nguyên tử 1
+2. Carbon (C) – số hiệu nguyên tử 6
+3. Oxygen (O) – số hiệu nguyên tử 8
+4. Sodium (Na) – số hiệu nguyên tử 11
+5. Chlorine (Cl) – số hiệu nguyên tử 17
+
+========================
+1. GIAO DIỆN TRANG CHỦ
+========================
+
+Tạo header gồm:
+- Tiêu đề: "Periodic Flashcards"
+- Phụ đề: "Học nhanh 5 nguyên tố trong bảng tuần hoàn"
+- Một nút "Bắt đầu học"
+
+Bên dưới hiển thị 5 nguyên tố dưới dạng các ô/card nhỏ.
+
+Mỗi ô hiển thị:
+- Số hiệu nguyên tử
+- Ký hiệu nguyên tố
+- Tên nguyên tố
+
+========================
+2. FLASHCARD
+========================
+
+Khi nhấn "Bắt đầu học", chuyển sang khu vực Flashcard.
+
+Flashcard nằm chính giữa màn hình.
+
+Mặt trước của flashcard hiển thị:
+- Số hiệu nguyên tử
+- Ký hiệu nguyên tố thật lớn
+- Tên nguyên tố
+- Dòng chữ "Nhấn vào thẻ để xem thông tin"
+
+Khi người dùng click vào flashcard:
+- Thẻ có animation lật 3D.
+- Mặt sau hiển thị:
+  - Tên nguyên tố
+  - Ký hiệu
+  - Số hiệu nguyên tử
+  - Nguyên tử khối
+  - Nhóm
+  - Chu kỳ
+  - Loại nguyên tố
+  - Cấu hình electron đơn giản
+
+Thông tin:
+
+Hydrogen:
+- Ký hiệu: H
+- Số hiệu nguyên tử: 1
+- Nguyên tử khối: 1.008
+- Nhóm: 1
+- Chu kỳ: 1
+- Loại: Phi kim
+- Cấu hình electron: 1s¹
+
+Carbon:
+- Ký hiệu: C
+- Số hiệu nguyên tử: 6
+- Nguyên tử khối: 12.011
+- Nhóm: 14
+- Chu kỳ: 2
+- Loại: Phi kim
+- Cấu hình electron: 1s² 2s² 2p²
+
+Oxygen:
+- Ký hiệu: O
+- Số hiệu nguyên tử: 8
+- Nguyên tử khối: 15.999
+- Nhóm: 16
+- Chu kỳ: 2
+- Loại: Phi kim
+- Cấu hình electron: 1s² 2s² 2p⁴
+
+Sodium:
+- Ký hiệu: Na
+- Số hiệu nguyên tử: 11
+- Nguyên tử khối: 22.990
+- Nhóm: 1
+- Chu kỳ: 3
+- Loại: Kim loại kiềm
+- Cấu hình electron: 1s² 2s² 2p⁶ 3s¹
+
+Chlorine:
+- Ký hiệu: Cl
+- Số hiệu nguyên tử: 17
+- Nguyên tử khối: 35.45
+- Nhóm: 17
+- Chu kỳ: 3
+- Loại: Halogen / Phi kim
+- Cấu hình electron: 1s² 2s² 2p⁶ 3s² 3p⁵
+
+========================
+3. NÚT ĐIỀU KHIỂN
+========================
+
+Bên dưới flashcard có:
+
+[← Trước] [Lật thẻ] [Tiếp →]
+
+Chức năng:
+- Trước: chuyển về nguyên tố trước.
+- Tiếp: chuyển sang nguyên tố tiếp theo.
+- Lật thẻ: lật flashcard.
+- Khi chuyển nguyên tố mới, flashcard tự động trở về mặt trước.
+
+Hiển thị tiến trình:
+
+"Nguyên tố 1 / 5"
+
+Có thanh progress bar tương ứng với tiến trình học.
+
+========================
+4. CHẾ ĐỘ TRỘN
+========================
+
+Thêm nút:
+
+"🔀 Trộn thẻ"
+
+Khi nhấn:
+- Xáo trộn thứ tự 5 nguyên tố.
+- Không làm mất dữ liệu.
+- Reset về flashcard đầu tiên.
+
+========================
+5. CHẾ ĐỘ KIỂM TRA
+========================
+
+Thêm nút:
+
+"📝 Kiểm tra"
+
+Khi nhấn, chuyển sang Quiz Mode.
+
+Tạo 5 câu hỏi trắc nghiệm.
+
+Ví dụ:
+
+"C nguyên tố có số hiệu nguyên tử là bao nhiêu?"
+
+A. 1
+B. 6
+C. 8
+D. 11
+
+Người dùng chọn đáp án.
+
+Sau khi chọn:
+- Nếu đúng → hiển thị "✓ Chính xác!"
+- Nếu sai → hiển thị "✗ Chưa chính xác!"
+- Hiển thị đáp án đúng.
+- Có nút "Câu tiếp theo".
+
+Cuối bài:
+- Hiển thị điểm số.
+- Ví dụ: "Bạn đạt 4/5 câu"
+- Có nút "Làm lại".
+
+========================
+6. GIAO DIỆN
+========================
+
+Thiết kế theo phong cách:
+- Modern
+- Clean
+- Educational
+- Glassmorphism nhẹ
+- Bo góc đẹp
+- Shadow mềm
+- Animation mượt
+- Không quá nhiều hiệu ứng gây rối.
+
+Màu sắc chủ đạo:
+- Xanh dương
+- Tím
+- Trắng
+- Có gradient nhẹ.
+
+Flashcard có hiệu ứng hover:
+- Nâng nhẹ lên.
+- Shadow tăng.
+- Cursor pointer.
+
+Animation lật thẻ phải là 3D flip thực sự bằng CSS.
+
+========================
+7. DARK MODE
+========================
+
+Thêm nút chuyển:
+
+☀️ / 🌙
+
+Cho phép chuyển giữa:
+- Light Mode
+- Dark Mode
+
+Lưu lựa chọn của người dùng bằng localStorage.
+
+========================
+8. ÂM THANH
+========================
+
+Không bắt buộc sử dụng file âm thanh bên ngoài.
+
+Nếu có thể, sử dụng Web Audio API đơn giản để tạo âm thanh click nhẹ khi:
+- lật thẻ
+- chuyển thẻ
+- trả lời đúng
+- trả lời sai
+
+Có nút bật/tắt âm thanh.
+
+========================
+9. RESPONSIVE
+========================
+
+Website phải hoạt động tốt trên:
+- PC
+- Laptop
+- Tablet
+- Điện thoại.
+
+Trên điện thoại:
+- Flashcard tự động thu nhỏ.
+- Các nút điều khiển không bị tràn màn hình.
+- Font chữ phù hợp.
+- Các card nguyên tố chuyển thành grid 2 cột hoặc 1 cột tùy kích thước màn hình.
+
+========================
+10. CODE
+========================
+
+Hãy trả về FULL CODE hoàn chỉnh cho cả 3 file:
+
+1. index.html
+2. style.css
+3. script.js
+
+Không bỏ qua bất kỳ phần code nào.
+
+Không viết pseudo-code.
+
+Không yêu cầu backend.
+
+Không sử dụng database.
+
+Không sử dụng API bên ngoài.
+
+Tất cả dữ liệu 5 nguyên tố phải được lưu trong JavaScript.
+
+Code phải chạy ngay sau khi tôi upload 3 file lên GitHub Pages.
+
+Trong phần cuối câu trả lời, hãy hướng dẫn tôi từng bước:
+1. Tạo repository trên GitHub.
+2. Tạo/upload index.html.
+3. Tạo/upload style.css.
+4. Tạo/upload script.js.
+5. Bật GitHub Pages.
+6. Lấy link website.
+
+Hãy đảm bảo không có lỗi JavaScript và các nút đều hoạt động.
