@@ -99,8 +99,8 @@ function hideIntro(){
   let p = parseInt($("introFill").style.width || "0", 10);
   const iv=setInterval(()=>{ p+=25; $("introFill").style.width=p+"%";
   const cv=$("particles"), c=cv.getContext("2d");
-  let W,H,pts=[];
-  function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight;
+    },120);
+}
     pts=Array.from({length: innerWidth<640?35:65},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.8+.6}));
   }
   rs(); addEventListener("resize",rs);
