@@ -1,4 +1,4 @@
-/* ============ CHEMFLASH — sổ tay lab, sticker, chunky EdTech ============ */
+/* ================= CHEMFLASH v6 — bản viết lại: êm, gọn, ít chuyển động ================= */
 :root{
   --paper:#F6F1E4; --card:#FFFDF6; --ink:#26314B; --muted:#7A8199;
   --line:#26314B; --shadow:5px 5px 0 var(--ink);
@@ -20,60 +20,59 @@ body{
   background-size:28px 28px;
   min-height:100vh; overflow-x:hidden; transition:background .35s,color .35s;
 }
-.mono, .chip, .f-num, .q-count, .pt-cell{font-family:"IBM Plex Mono",monospace}
-#particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
 .wrap{max-width:1060px;margin:0 auto;padding:14px 16px 40px;position:relative;z-index:1}
 h1,h2,h3{line-height:1.15;margin:0 0 10px}
 .hidden{display:none!important}
 .tiny{color:var(--muted);font-size:13px}
-/* reveal */
-[data-reveal]{opacity:0;transform:translateY(22px);transition:opacity .6s var(--smooth),transform .6s var(--smooth)}
+/* hiện dần khi cuộn — chỉ 1 lần, rất nhẹ */
+[data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .55s var(--smooth),transform .55s var(--smooth)}
 [data-reveal].in{opacity:1;transform:none}
 
-/* ---- intro ---- */
+/* ---------- intro ---------- */
 .intro{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--paper);transition:opacity .45s}
 .intro.hide{opacity:0;pointer-events:none}
-.intro-card{background:var(--card);border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:30px 44px;text-align:center;transform:rotate(-1.5deg);animation:wiggle 2s ease-in-out infinite}
-@keyframes wiggle{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1deg)}}
+.intro-card{background:var(--card);border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:30px 44px;text-align:center;transform:rotate(-1.5deg)}
 .intro-logo{font-weight:900;font-size:30px;letter-spacing:2px}
 .intro-sub{color:var(--muted);margin:4px 0 12px}
 .intro-bar{width:210px;height:12px;border:3px solid var(--line);border-radius:99px;overflow:hidden;background:var(--paper)}
 .intro-bar div{height:100%;width:0;background:repeating-linear-gradient(45deg,var(--yellow) 0 10px,var(--orange) 10px 20px)}
 .flask-mini{width:56px}
-.flask-mini .bub{animation:rise 1.4s ease-in infinite}
-.flask-mini .b2{animation-delay:.4s}.flask-mini .b3{animation-delay:.8s}
-@keyframes rise{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-12px);opacity:0}}
+.flask-mini .bub{animation:rise 3s ease-in-out infinite}
+.flask-mini .b2{animation-delay:1.2s}
+/* bọt nổi: mờ dần 2 đầu, không bụp tắt */
+@keyframes rise{0%{transform:translateY(8px);opacity:0}30%{opacity:1}70%{opacity:1}100%{transform:translateY(-14px);opacity:0}}
 
-/* ---- ticker ---- */
+/* ---------- ticker: chạy rất chậm ---------- */
 .ticker{background:var(--ink);color:var(--paper);overflow:hidden;white-space:nowrap;position:relative;z-index:2}
-.ticker-in{display:inline-block;padding:7px 0;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:700;letter-spacing:1px;animation:tick 26s linear infinite}
-@keyframes tick{to{transform:translateX(-50%)}}
+.ticker-in{display:inline-block;padding:7px 0;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:700;letter-spacing:1px;animation:tick 60s linear infinite;will-change:transform}
+@keyframes tick{to{transform:translateX(-50)}}
 
-/* ---- header ---- */
+/* ---------- header ---------- */
 .header{position:sticky;top:10px;z-index:30;max-width:1060px;margin:10px auto 0;width:calc(100% - 20px)}
 .header-in{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:9px 14px}
 .brand{display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--ink);font:900 17px "Be Vietnam Pro",sans-serif;letter-spacing:1px;cursor:pointer}
-.brand-flask{width:26px;transform:rotate(-6deg)}
+.brand-flask{width:26px}
 .nav{display:flex;gap:2px;flex-wrap:wrap}
-.nav-link{background:transparent;border:2px solid transparent;color:var(--muted);font:700 13.5px "Be Vietnam Pro",sans-serif;padding:8px 12px;border-radius:12px;cursor:pointer;transition:.18s var(--spring)}
-.nav-link:hover{color:var(--ink);border-color:var(--line);transform:translateY(-1px) rotate(-.5deg)}
+.nav-link{background:transparent;border:2px solid transparent;color:var(--muted);font:700 13.5px "Be Vietnam Pro",sans-serif;padding:8px 12px;border-radius:12px;cursor:pointer;transition:background .18s,color .18s}
+.nav-link:hover{color:var(--ink);border-color:var(--line)}
 .nav-link.active{background:var(--yellow);color:#26314B;border-color:var(--line);box-shadow:3px 3px 0 var(--line)}
 .header-right{display:flex;gap:8px;align-items:center}
 .score-pill{background:var(--pink);border:3px solid var(--line);border-radius:999px;padding:5px 13px;font-weight:900;box-shadow:3px 3px 0 var(--line);color:#26314B}
-.icon-btn{width:42px;height:42px;border-radius:13px;border:3px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:17px;box-shadow:3px 3px 0 var(--line);transition:.16s var(--spring)}
-.icon-btn:hover{transform:translateY(-2px) rotate(-2deg)}
+.icon-btn{width:42px;height:42px;border-radius:13px;border:3px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:17px;box-shadow:3px 3px 0 var(--line);transition:transform .15s,box-shadow .15s}
+.icon-btn:hover{transform:translateY(-2px)}
 .icon-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
 .burger{display:none}
 
-/* ---- pages ---- */
+/* ---------- pages ---------- */
 .page{display:none}
-.page.active{display:block;animation:pageIn .45s var(--smooth)}
-@keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.page.active{display:block;animation:pageIn .4s var(--smooth)}
+@keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-/* ---- hero ---- */
+/* ---------- hero ---------- */
 .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:center;background:var(--card);border:3px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:34px;margin-top:16px;position:relative;overflow:hidden}
 .hero::before{content:"";position:absolute;top:-40px;right:-40px;width:170px;height:170px;border-radius:50%;background:var(--yellow);opacity:.35}
-.sticker{display:inline-block;background:var(--green);border:3px solid var(--line);border-radius:999px;padding:5px 14px;font:700 12px "IBM Plex Mono",monospace;box-shadow:3px 3px 0 var(--line);transform:rotate(-2deg);color:#26314B}
+.sticker{display:inline-block;background:var(--green);border:3px solid var(--line);border-radius:999px;padding:5px 14px;font:700 12px "IBM Plex Mono",monospace;box-shadow:3px 3px 0 var(--line);color:#26314B}
 .hero h1{font-size:clamp(32px,5.4vw,58px);font-weight:900;margin:14px 0 8px}
 .marker{background:linear-gradient(transparent 55%,var(--yellow) 55%);padding:0 6px}
 .tagline{font-family:"IBM Plex Mono",monospace;font-weight:700;color:var(--muted)}
@@ -82,51 +81,47 @@ h1,h2,h3{line-height:1.15;margin:0 0 10px}
 .hero-stats{display:flex;gap:12px;flex-wrap:wrap}
 .stat{background:var(--paper);border:3px solid var(--line);border-radius:16px;box-shadow:4px 4px 0 var(--line);padding:10px 18px;min-width:110px;text-align:center}
 .stat b{font-size:26px;display:block}.stat span{color:var(--muted);font-size:12px}
-/* hero art */
 .hero-art{display:flex;justify-content:center}
 .lab-scene{width:min(320px,100%)}
 .lab-scene .shadow{fill:rgba(38,49,75,.15)}
 .flask-body{fill:#fff;stroke:var(--line);stroke-width:5}
 .flask-mouth{fill:var(--yellow);stroke:var(--line);stroke-width:4}
-.liquid-big{fill:var(--blue);opacity:.9;animation:slosh 3.4s ease-in-out infinite}
-@keyframes slosh{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
-.lab-scene .bub{fill:#fff;animation:rise 1.8s ease-in infinite}
-.lab-scene .b2{animation-delay:.5s}.lab-scene .b3{animation-delay:1s}.lab-scene .b4{animation-delay:1.4s}
+.liquid-big{fill:var(--blue);opacity:.9}
+.lab-scene .bub{fill:#fff;animation:rise 3.4s ease-in-out infinite}
+.lab-scene .b2{animation-delay:1.5s}
 .m-nuc{fill:var(--pink);stroke:var(--line);stroke-width:2.5}
 .m-orbit{fill:none;stroke:var(--line);stroke-width:2.5}
 .m-e{fill:var(--yellow);stroke:var(--line);stroke-width:2}
-.mini-atom{animation:bob 3s ease-in-out infinite;transform-origin:228px 70px}
-@keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-9px) rotate(6deg)}}
+.mini-atom{animation:bob 6s ease-in-out infinite;transform-origin:228px 70px}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .chip-f rect{fill:var(--card);stroke:var(--line);stroke-width:3}
 .chip-f text{font:900 20px "Be Vietnam Pro";fill:var(--ink);text-anchor:middle}
-.chip-f.f1{animation:bob 2.6s ease-in-out infinite}
-.chip-f.f2{animation:bob 3.4s ease-in-out infinite reverse}
+.chip-f.f1{animation:bob 5s ease-in-out infinite}
+.chip-f.f2{animation:bob 7s ease-in-out infinite reverse}
 
-/* ---- sections ---- */
+/* ---------- khối nội dung ---------- */
 .sec-title{margin:30px 4px 4px;font-size:24px;font-weight:900}
 .sec-title .doodle{color:var(--pink)}
 .sec-sub{color:var(--muted);margin:0 4px 12px}
 .el-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.el-card{background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;cursor:pointer;transition:transform .25s var(--spring),box-shadow .25s;position:relative;overflow:hidden}
-.el-card:hover{transform:translateY(-6px) rotate(-1deg)}
+.el-card{background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;cursor:pointer;transition:transform .22s var(--spring),box-shadow .22s;position:relative;overflow:hidden}
+.el-card:hover{transform:translateY(-5px)}
 .el-card:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
 .el-tag{position:absolute;top:0;left:0;right:0;height:9px;background:var(--ec)}
-.el-num{font-size:12px;font-weight:700;color:var(--muted)}
+.el-num{font-size:12px;font-weight:700;color:var(--muted);font-family:"IBM Plex Mono",monospace}
 .el-illus svg{width:100%;height:86px}
 .el-sym{font-size:30px;font-weight:900;color:var(--ec)}
 .el-name{font-weight:700}
 .el-go{font-size:12px;color:var(--muted);font-weight:700}
-/* steps */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
 .step{background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
 .step-n{display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;background:var(--ink);color:var(--paper);font-weight:900;border-radius:50%;margin-bottom:8px}
 .step p{color:var(--muted);font-size:13.5px;margin:6px 0 0}
-/* cta */
 .cta{margin-top:22px;text-align:center;background:var(--ink);color:var(--paper);border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:34px 22px}
 [data-theme="dark"] .cta{background:#0C1226}
 .cta p{opacity:.75}
-/* buttons */
-.btn{border:3px solid var(--line);border-radius:14px;padding:12px 22px;font:800 15px "Be Vietnam Pro",sans-serif;cursor:pointer;box-shadow:4px 4px 0 var(--line);transition:transform .16s var(--spring),box-shadow .16s}
+/* nút */
+.btn{border:3px solid var(--line);border-radius:14px;padding:12px 22px;font:800 15px "Be Vietnam Pro",sans-serif;cursor:pointer;box-shadow:4px 4px 0 var(--line);transition:transform .15s,box-shadow .15s}
 .btn:hover{transform:translate(-1px,-2px);box-shadow:5px 6px 0 var(--line)}
 .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--line)}
 .btn-primary{background:var(--yellow);color:#26314B}
@@ -134,13 +129,12 @@ h1,h2,h3{line-height:1.15;margin:0 0 10px}
 .btn-lg{font-size:16px;padding:14px 30px}
 .btn-sm{padding:7px 12px;font-size:13px}
 
-/* ---- panel ---- */
+/* ---------- panel ---------- */
 .panel{background:var(--card);border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:24px;margin-top:16px}
 .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.chip{background:var(--paper);border:2.5px solid var(--line);padding:6px 13px;border-radius:999px;font-size:13px;font-weight:700}
+.chip{background:var(--paper);border:2.5px solid var(--line);padding:6px 13px;border-radius:999px;font-size:13px;font-weight:700;font-family:"IBM Plex Mono",monospace}
 .chip.gold{background:var(--yellow);color:#26314B}
-.chip.combo{background:var(--pink);color:#26314B;animation:pop .3s var(--spring)}
-@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.chip.combo{background:var(--pink);color:#26314B}
 .progress{height:14px;background:var(--paper);border:3px solid var(--line);border-radius:99px;overflow:hidden;margin:14px 0}
 .progress div{height:100%;width:0;background:repeating-linear-gradient(45deg,var(--green) 0 12px,#2BAE76 12px 24px);transition:width .45s var(--spring)}
 /* flashcard */
@@ -151,8 +145,8 @@ h1,h2,h3{line-height:1.15;margin:0 0 10px}
 .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow:hidden}
 .front{background:var(--card)}
 .front::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;background:var(--ec,var(--blue))}
-.tape{position:absolute;top:20px;left:50%;transform:translateX(-50%) rotate(-3deg);width:90px;height:24px;background:rgba(255,210,63,.7);border:2px solid var(--line);opacity:.9}
-.f-num{position:absolute;top:22px;left:20px;background:var(--ink);color:var(--paper);font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px}
+.tape{position:absolute;top:20px;left:50%;transform:translateX(-50%) rotate(-3deg);width:90px;height:24px;background:rgba(255,210,63,.7);border:2px solid var(--line)}
+.f-num{position:absolute;top:24px;left:20px;background:var(--ink);color:var(--paper);font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px;font-family:"IBM Plex Mono",monospace}
 .f-illus svg{width:170px;height:130px}
 .f-sym{font-size:84px;font-weight:900;color:var(--ec);line-height:1}
 .f-name{font-size:24px;font-weight:800}
@@ -169,12 +163,12 @@ h1,h2,h3{line-height:1.15;margin:0 0 10px}
 [data-theme="dark"] .fun{background:#2A2410;color:var(--ink)}
 .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
 .btn-row .btn{flex:1;min-width:140px;max-width:230px}
-.done{margin-top:14px;text-align:center;background:var(--green);color:#26314B;border:3px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px;font-weight:800;animation:pop .4s var(--spring)}
-/* ptable */
+.done{margin-top:14px;text-align:center;background:var(--green);color:#26314B;border:3px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px;font-weight:800}
+/* bảng tuần hoàn */
 .ptable{display:grid;grid-template-columns:repeat(18,1fr);gap:6px;margin:16px 0}
-.pt-cell{aspect-ratio:.8;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:12px;background:transparent;border:2.5px dashed var(--muted);opacity:.35;min-height:52px}
-.pt-cell.on{background:var(--card);border:2.5px solid var(--line);opacity:1;cursor:pointer;box-shadow:3px 3px 0 var(--line);transition:.2s var(--spring);border-top:8px solid var(--ec)}
-.pt-cell.on:hover{transform:translateY(-3px) rotate(-2deg)}
+.pt-cell{aspect-ratio:.8;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:12px;font-family:"IBM Plex Mono",monospace;background:transparent;border:2.5px dashed var(--muted);opacity:.35;min-height:52px}
+.pt-cell.on{background:var(--card);border:2.5px solid var(--line);opacity:1;cursor:pointer;box-shadow:3px 3px 0 var(--line);transition:transform .18s;border-top:8px solid var(--ec)}
+.pt-cell.on:hover{transform:translateY(-3px)}
 .pt-cell.on.sel{background:var(--yellow);color:#26314B}
 .pt-cell small{font-size:10px}
 .pdetail{display:flex;gap:14px;align-items:center;background:var(--paper);border:3px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px}
@@ -183,12 +177,11 @@ h1,h2,h3{line-height:1.15;margin:0 0 10px}
 /* quiz */
 .q-text{font-size:19px;font-weight:800;margin:12px 0}
 .q-opts{display:flex;flex-direction:column;gap:10px}
-.q-opt{text-align:left;padding:13px 15px;border-radius:13px;border:3px solid var(--line);background:var(--card);color:var(--ink);font:700 15px "Be Vietnam Pro",sans-serif;cursor:pointer;box-shadow:3px 3px 0 var(--line);transition:.18s var(--spring)}
+.q-opt{text-align:left;padding:13px 15px;border-radius:13px;border:3px solid var(--line);background:var(--card);color:var(--ink);font:700 15px "Be Vietnam Pro",sans-serif;cursor:pointer;box-shadow:3px 3px 0 var(--line);transition:transform .15s}
 .q-opt:hover:not(:disabled){transform:translateX(4px)}
 .q-opt:disabled{cursor:default}
-.q-opt.ok{background:var(--green)!important;color:#26314B;animation:pop .3s var(--spring)}
-.q-opt.bad{background:var(--pink)!important;color:#26314B;animation:shake .35s}
-@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.q-opt.ok{background:var(--green)!important;color:#26314B}
+.q-opt.bad{background:var(--pink)!important;color:#26314B}
 .q-feed{min-height:30px;font-weight:800;text-align:center;margin:10px 0}
 .q-feed.ok{color:#1E9E64}.q-feed.no{color:#E14D6B}
 .end{text-align:center}.score-big{font-size:64px;font-weight:900}
@@ -198,7 +191,7 @@ h1,h2,h3{line-height:1.15;margin:0 0 10px}
 .rank-grid b{font-size:24px;display:block}.rank-grid span{color:var(--muted);font-size:12px}
 .badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .badge{padding:16px 10px;border-radius:16px;text-align:center;border:3px dashed var(--muted);opacity:.5;filter:grayscale(1)}
-.badge.un{opacity:1;filter:none;border:3px solid var(--line);background:var(--yellow);color:#26314B;box-shadow:var(--shadow);transform:rotate(-1deg)}
+.badge.un{opacity:1;filter:none;border:3px solid var(--line);background:var(--yellow);color:#26314B;box-shadow:var(--shadow)}
 .badge .bi{font-size:32px}.badge b{display:block;margin-top:6px}.badge small{font-size:12px}
 /* account */
 .account{max-width:520px;margin:0 auto}
@@ -209,34 +202,39 @@ h1,h2,h3{line-height:1.15;margin:0 0 10px}
 .account input{width:100%;padding:11px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);font-size:15px;font-family:inherit}
 .account input:focus{outline:none;box-shadow:3px 3px 0 var(--blue)}
 .err{min-height:20px;color:#E14D6B;font-weight:700;font-size:13.5px;margin:8px 0}
-.me{display:flex;gap:10px;align-items:center}.avatar{font-size:30px;background:var(--yellow);border:3px solid var(--line);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--line)}
+.me{display:flex;gap:10px;align-items:center}.avatar{font-size:26px;background:var(--yellow);border:3px solid var(--line);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--line)}
 .sound-row{display:flex;gap:10px;align-items:center;margin:14px 0;flex-wrap:wrap}
-input[type=range]{flex:1;accent-color:var(--pink)}
+.sound-row label{margin:0}
+input[type=range]{flex:1;accent-color:var(--pink);min-width:140px}
 .footer{text-align:center;color:var(--muted);font-size:13px;margin:26px 0 8px}
 /* toast + confetti */
 #toasts{position:fixed;bottom:18px;right:18px;z-index:90;display:flex;flex-direction:column;gap:8px}
-.toast{background:var(--ink);color:var(--paper);border:3px solid var(--line);padding:11px 16px;border-radius:14px;font-weight:700;box-shadow:var(--shadow);animation:pageIn .3s;max-width:300px}
+.toast{background:var(--ink);color:var(--paper);border:3px solid var(--line);padding:11px 16px;border-radius:14px;font-weight:700;box-shadow:var(--shadow);max-width:300px}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:80;overflow:hidden}
 .cf{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
-/* element illustration anims */
-.illus .float-a{animation:flUp 2.6s ease-in-out infinite}
-.illus .float-b{animation:flUp 3.2s ease-in-out infinite reverse}
-@keyframes flUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.illus .rise{animation:rise 2s ease-in infinite}
-.illus .rise.r2{animation-delay:.6s}.illus .rise.r3{animation-delay:1.2s}
-.illus .sway{animation:sway 3s ease-in-out infinite;transform-origin:bottom center}
-@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-.illus .flick{animation:flick 1.6s ease-in-out infinite;transform-origin:bottom center}
-@keyframes flick{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.08)}}
-.illus .spin-slow{animation:orbit 10s linear infinite;transform-origin:center}
+/* minh họa nguyên tố: chuyển động nhẹ */
+.illus .float-a{animation:flUp 4s ease-in-out infinite}
+.illus .float-b{animation:flUp 5.2s ease-in-out infinite reverse}
+@keyframes flUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.illus .rise{animation:rise 3.2s ease-in-out infinite}
+.illus .rise.r2{animation-delay:1s}.illus .rise.r3{animation-delay:2s}
+.illus .sway{animation:sway 4.5s ease-in-out infinite;transform-origin:bottom center}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.illus .flick{animation:flick 2.4s ease-in-out infinite;transform-origin:bottom center}
+@keyframes flick{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.06)}}
+/* chế độ êm: tắt hết chuyển động nền, giữ transition nút/thẻ */
+body.calm .ticker-in,body.calm .bub,body.calm .mini-atom,body.calm .chip-f,
+body.calm .illus .float-a,body.calm .illus .float-b,body.calm .illus .sway,
+body.calm .illus .flick,body.calm .illus .rise{animation:none!important}
+body.calm #particles{display:none}
 @media(max-width:900px){.hero{grid-template-columns:1fr}.el-grid{grid-template-columns:repeat(3,1fr)}.rank-grid,.badge-grid{grid-template-columns:repeat(2,1fr)}.ptable{grid-template-columns:repeat(9,1fr)}.steps{grid-template-columns:1fr}}
 @media(max-width:640px){
   .nav{position:fixed;top:74px;right:12px;flex-direction:column;background:var(--card);border:3px solid var(--line);border-radius:16px;padding:8px;display:none;min-width:210px;box-shadow:var(--shadow);z-index:40}
   .nav.open{display:flex}.burger{display:block}
   .el-grid{grid-template-columns:repeat(2,1fr)}
   .btn-row .btn{min-width:100%}
-  .card-in{height:520px}.f-sym{font-size:70px}
+  .card-in{height:540px}.f-sym{font-size:70px}
   .ptable{grid-template-columns:repeat(6,1fr)}
   .header{top:8px}
 }
