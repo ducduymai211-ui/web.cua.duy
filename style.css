@@ -30,12 +30,13 @@ body{margin:0;font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif;background
 .big-atom{width:230px;height:230px}
 .nucleus{position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,var(--cyan) 40%,var(--blue));box-shadow:0 0 30px var(--cyan)}
 .big-atom .nucleus{width:44px;height:44px}
-.orbit{position:absolute;inset:0;border:1px solid rgba(34,211,238,.45);border-radius:50%}
-.o2{transform:rotate(60deg)}.o3{transform:rotate(120deg)}
-.e{position:absolute;top:-5px;left:50%;width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:spin 2.2s linear infinite}
-.o2 .e{animation-duration:1.7s;background:var(--purple);box-shadow:0 0 12px var(--purple)}
-.o3 .e{animation-duration:2.6s;background:var(--green);box-shadow:0 0 12px var(--green)}
-@keyframes spin{to{transform:rotate(360deg);transform-origin:-60px 65px}}
+.orbit{position:absolute;inset:0;border:1px solid rgba(34,211,238,.45);border-radius:50%;animation:orbit 8s linear infinite;will-change:transform}
+.o2{rotate:60deg;animation-duration:5.5s}.o3{rotate:120deg;animation-duration:11s}
+.e{position:absolute;top:-6px;left:50%;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.o2 .e{background:var(--purple);box-shadow:0 0 12px var(--purple)}
+.o3 .e{background:var(--green);box-shadow:0 0 12px var(--green)}
+@keyframes orbit{to{transform:rotate(360deg)}}
+/* HEADER */
 .big-atom .e{animation-name:spinB}
 @keyframes spinB{to{transform:rotate(360deg);transform-origin:-115px 120px}}
 /* HEADER */
