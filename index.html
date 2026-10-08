@@ -1,101 +1,130 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="dark">
+<html lang="vi" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CHEMFLASH — Khám phá thế giới nguyên tố</title>
-<meta name="description" content="CHEMFLASH — Flashcard Hóa học 5 nguyên tố: H, C, O, Na, Cl. Học, luyện tập, thành tích. Chạy trên GitHub Pages." />
+<title>CHEMFLASH — Sổ tay nguyên tố</title>
+<meta name="description" content="CHEMFLASH — học 5 nguyên tố H, C, O, Na, Cl qua flashcard minh họa, luyện tập tính điểm, nhận huy hiệu." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2" />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800;900&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body>
 <canvas id="particles"></canvas>
 
 <!-- INTRO -->
 <div id="intro" class="intro">
-  <div class="atom-loader" aria-hidden="true">
-    <div class="nucleus"></div>
-    <div class="orbit o1"><span class="e"></span></div>
-    <div class="orbit o2"><span class="e"></span></div>
-    <div class="orbit o3"><span class="e"></span></div>
+  <div class="intro-card">
+    <svg class="flask-mini" viewBox="0 0 64 76" aria-hidden="true">
+      <path d="M24 4h16v10l12 26a12 12 0 0 1-11 16H23a12 12 0 0 1-11-16L24 14V4z" fill="#fff" stroke="#232A3B" stroke-width="3"/>
+      <path class="liquid" d="M18 40h28l4 8a8 8 0 0 1-7 12H21a8 8 0 0 1-7-12l4-8z" fill="#22d3ee"/>
+      <circle class="bub b1" cx="28" cy="52" r="3" fill="#fff"/>
+      <circle class="bub b2" cx="36" cy="54" r="2.2" fill="#fff"/>
+      <circle class="bub b3" cx="32" cy="48" r="1.6" fill="#fff"/>
+    </svg>
+    <div class="intro-logo">CHEMFLASH</div>
+    <div class="intro-sub">đang pha chế bài học…</div>
+    <div class="intro-bar"><div id="introFill"></div></div>
   </div>
-  <div class="intro-logo">⚛ CHEMFLASH</div>
-  <div class="intro-sub">Khám phá thế giới nguyên tố</div>
-  <div class="intro-bar"><div id="introFill"></div></div>
 </div>
 
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true"><div class="ticker-in" id="tickerIn"></div></div>
+
 <!-- HEADER -->
-<header class="header glass">
+<header class="header">
   <div class="header-in">
-    <button class="brand" data-nav="home" aria-label="Về trang chủ"><span class="brand-icon">⚛</span> CHEMFLASH</button>
+    <button class="brand" data-nav="home" aria-label="Về trang chủ">
+      <svg viewBox="0 0 32 38" class="brand-flask" aria-hidden="true">
+        <path d="M12 2h8v5l6 13a7 7 0 0 1-6.2 9H12.2A7 7 0 0 1 6 20l6-13V2z" fill="#FFD23F" stroke="#232A3B" stroke-width="2.4"/>
+        <circle cx="16" cy="23" r="2.4" fill="#fff"/><circle cx="20" cy="25" r="1.6" fill="#fff"/>
+      </svg>
+      CHEMFLASH
+    </button>
     <nav class="nav" id="nav">
-      <button class="nav-link active" data-nav="home">🏠 Trang chủ</button>
-      <button class="nav-link" data-nav="flash">🧪 Flashcard</button>
-      <button class="nav-link" data-nav="table">⚛ Bảng tuần hoàn</button>
-      <button class="nav-link" data-nav="quiz">🎯 Luyện tập</button>
-      <button class="nav-link" data-nav="ranks">🏆 Thành tích</button>
-      <button class="nav-link" data-nav="account">👤 Tài khoản</button>
+      <button class="nav-link active" data-nav="home">Trang chủ</button>
+      <button class="nav-link" data-nav="flash">Flashcard</button>
+      <button class="nav-link" data-nav="table">Bảng tuần hoàn</button>
+      <button class="nav-link" data-nav="quiz">Luyện tập</button>
+      <button class="nav-link" data-nav="ranks">Thành tích</button>
+      <button class="nav-link" data-nav="account">Tài khoản</button>
     </nav>
     <div class="header-right">
-      <div class="score-pill" id="scorePill" title="Điểm hiện tại">⭐ <b id="hudScore">0</b></div>
+      <div class="score-pill" id="scorePill" title="Tổng điểm">★ <b id="hudScore">0</b></div>
       <button id="soundBtn" class="icon-btn" title="Âm thanh ON/OFF">🔊</button>
-      <button id="themeBtn" class="icon-btn" title="Dark / Light">☀️</button>
+      <button id="themeBtn" class="icon-btn" title="Ngày / Đêm">🌙</button>
       <button id="burger" class="icon-btn burger" aria-label="Menu">☰</button>
     </div>
   </div>
 </header>
 
 <main class="wrap">
-  <!-- HOME -->
+  <!-- ============ HOME ============ -->
   <section id="page-home" class="page active">
-    <div class="hero glass">
-      <div class="hero-grid">
-        <div class="hero-text">
-          <div class="kicker">EDTECH • HÓA HỌC TRỰC QUAN</div>
-          <h1>KHÁM PHÁ<br><span class="grad">THẾ GIỚI NGUYÊN TỐ</span></h1>
-          <p class="tagline">Learn • Discover • Master Chemistry</p>
-          <p class="desc">Học Hóa học theo cách trực quan, tương tác và thú vị hơn.</p>
-          <div class="hero-btns">
-            <button class="btn btn-primary ripple" data-nav="flash">🧪 Bắt đầu khám phá</button>
-            <button class="btn btn-ghost ripple" data-nav="quiz">🎯 Luyện tập ngay</button>
-          </div>
-          <div class="hero-stats">
-            <div><b id="statElements">5</b><span>nguyên tố</span></div>
-            <div><b id="statBest">0</b><span>điểm cao nhất</span></div>
-            <div><b id="statAcc">0%</b><span>chính xác</span></div>
-          </div>
+    <div class="hero" data-reveal>
+      <div class="hero-text">
+        <span class="sticker">SỔ TAY HÓA HỌC • LỚP 8–10</span>
+        <h1>Hóa học<br><span class="marker">không còn</span> khô khan.</h1>
+        <p class="tagline">Learn • Discover • Master Chemistry</p>
+        <p class="desc">5 nguyên tố, 5 câu chuyện bằng hình vẽ. Lật thẻ, trả lời, gom điểm và mở huy hiệu <b>Nhà giả kim</b>.</p>
+        <div class="hero-btns">
+          <button class="btn btn-primary" data-nav="flash">Bắt đầu khám phá →</button>
+          <button class="btn btn-ghost" data-nav="quiz">Luyện tập ngay</button>
         </div>
-        <div class="hero-atom" aria-hidden="true">
-          <div class="big-atom">
-            <div class="nucleus"></div>
-            <div class="orbit o1"><span class="e"></span></div>
-            <div class="orbit o2"><span class="e"></span></div>
-            <div class="orbit o3"><span class="e"></span></div>
-          </div>
-          <div class="float-chip c1">H</div>
-          <div class="float-chip c2">O</div>
-          <div class="float-chip c3">Na</div>
+        <div class="hero-stats">
+          <div class="stat"><b id="statElements">5</b><span>nguyên tố</span></div>
+          <div class="stat"><b id="statBest">0</b><span>điểm cao nhất</span></div>
+          <div class="stat"><b id="statAcc">0%</b><span>trả lời đúng</span></div>
         </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg class="lab-scene" viewBox="0 0 300 260">
+          <ellipse cx="150" cy="240" rx="110" ry="12" class="shadow"/>
+          <!-- bình tam giác -->
+          <g class="flask-big">
+            <path d="M118 60h64v22l34 74a26 26 0 0 1-23 38H107a26 26 0 0 1-23-38l34-74V60z" class="flask-body"/>
+            <rect x="112" y="48" width="76" height="14" rx="5" class="flask-mouth"/>
+            <path class="liquid-big" d="M96 150h108l12 22a20 20 0 0 1-18 30H102a20 20 0 0 1-18-30l12-22z"/>
+            <circle class="bub b1" cx="130" cy="180" r="5" />
+            <circle class="bub b2" cx="155" cy="186" r="3.6" />
+            <circle class="bub b3" cx="172" cy="178" r="2.6" />
+            <circle class="bub b4" cx="145" cy="170" r="2" />
+          </g>
+          <!-- nguyên tử nhỏ -->
+          <g class="mini-atom">
+            <circle cx="228" cy="70" r="7" class="m-nuc"/>
+            <ellipse cx="228" cy="70" rx="26" ry="11" class="m-orbit"/>
+            <circle cx="254" cy="70" r="3.4" class="m-e"/>
+          </g>
+          <g class="chip-f f1"><rect x="34" y="70" width="44" height="34" rx="10"/><text x="56" y="93">H</text></g>
+          <g class="chip-f f2"><rect x="238" y="150" width="44" height="34" rx="10"/><text x="260" y="173">O</text></g>
+        </svg>
       </div>
     </div>
 
-    <h2 class="sec-title">5 nguyên tố nổi bật</h2>
+    <h2 class="sec-title" data-reveal>5 nguyên tố trong sổ tay <span class="doodle">↓</span></h2>
+    <p class="sec-sub" data-reveal>Nhấn vào từng thẻ để học ngay nguyên tố đó.</p>
     <div id="homeElements" class="el-grid"></div>
 
-    <div class="cta glass">
+    <div class="steps" data-reveal>
+      <div class="step"><span class="step-n">1</span><b>Lật thẻ</b><p>Xem hình, đoán trước rồi mới xem đáp án.</p></div>
+      <div class="step"><span class="step-n">2</span><b>Luyện tập</b><p>10 câu hỏi trộn ngẫu nhiên, đúng +10 điểm.</p></div>
+      <div class="step"><span class="step-n">3</span><b>Nhận huy hiệu</b><p>Combo x5, PERFECT 100 và 4 huy hiệu chờ bạn.</p></div>
+    </div>
+
+    <div class="cta" data-reveal>
       <h2>Bạn đã sẵn sàng trở thành nhà hóa học?</h2>
-      <p>Hoàn thành 5 flashcard, đạt PERFECT 5/5 và mở huy hiệu Nhà giả kim.</p>
-      <button class="btn btn-primary btn-lg ripple" data-nav="flash">🚀 Bắt đầu học</button>
+      <p>Hoàn thành 5 flashcard rồi vào Luyện tập kiếm PERFECT.</p>
+      <button class="btn btn-primary btn-lg" data-nav="flash">Bắt đầu học →</button>
     </div>
   </section>
 
-  <!-- FLASHCARDS -->
+  <!-- ============ FLASHCARD ============ -->
   <section id="page-flash" class="page">
-    <div class="panel glass">
+    <div class="panel">
       <div class="panel-head">
-        <h2>🎓 Học Flashcard</h2>
+        <h2>Học Flashcard</h2>
         <div class="chip-row">
           <span class="chip" id="flashCount">Bạn đã khám phá 0/5 nguyên tố</span>
           <span class="chip gold">Điểm học: <b id="studyScore">0</b>/100</span>
@@ -106,11 +135,12 @@
         <div id="card" class="card3d" tabindex="0" role="button" aria-label="Thẻ, nhấn để lật">
           <div class="card-in" id="cardIn">
             <div class="face front">
-              <div class="f-orb" id="fOrb">⚛</div>
+              <span class="tape"></span>
               <div class="f-num" id="fNum">1</div>
+              <div class="f-illus" id="fIllus"></div>
               <div class="f-sym" id="fSym">H</div>
               <div class="f-name" id="fName">Hydrogen</div>
-              <div class="f-hint">Bấm để khám phá</div>
+              <div class="f-hint">chạm để lật xem đáp án</div>
             </div>
             <div class="face back">
               <div class="b-top"><span id="bSym" class="b-sym">H</span><span id="bName" class="b-name">HYDROGEN</span></div>
@@ -120,54 +150,54 @@
                 <div><span>Nhóm</span><b id="bGroup">1</b></div>
                 <div><span>Chu kỳ</span><b id="bPeriod">1</b></div>
                 <div><span>Loại</span><b id="bType">Phi kim</b></div>
-                <div><span>Màu</span><b id="bColor">Cyan</b></div>
+                <div><span>Màu đặc trưng</span><b id="bColor">Xanh da trời</b></div>
               </div>
-              <div class="fun"><b>💡 Fun fact:</b> <span id="bFun"></span></div>
+              <div class="fun"><b>Vì sao nhớ nó:</b> <span id="bFun"></span></div>
             </div>
           </div>
         </div>
       </div>
-      <p class="tiny">Nhấn thẻ để lật • ← → để chuyển • Vuốt trên điện thoại</p>
+      <p class="tiny">Nhấn thẻ để lật • phím ← → để chuyển • vuốt trên điện thoại</p>
       <div class="btn-row">
-        <button id="prevEl" class="btn btn-ghost ripple">← Nguyên tố trước</button>
-        <button id="flipEl" class="btn btn-primary ripple">🔄 Lật thẻ</button>
-        <button id="nextEl" class="btn btn-ghost ripple">Nguyên tố tiếp theo →</button>
+        <button id="prevEl" class="btn btn-ghost">← Trước</button>
+        <button id="flipEl" class="btn btn-primary">Lật thẻ</button>
+        <button id="nextEl" class="btn btn-ghost">Tiếp →</button>
       </div>
-      <div id="doneBox" class="done hidden">🎉 <b>Bạn đã hoàn thành bộ Flashcard!</b> Điểm: <b>100/100</b></div>
+      <div id="doneBox" class="done hidden">Bạn đã hoàn thành bộ Flashcard! Điểm: <b>100/100</b></div>
     </div>
   </section>
 
-  <!-- TABLE -->
+  <!-- ============ TABLE ============ -->
   <section id="page-table" class="page">
-    <div class="panel glass">
-      <div class="panel-head"><h2>⚛ Mini Bảng tuần hoàn</h2><span class="chip">5 nguyên tố • vị trí tương đối đúng</span></div>
+    <div class="panel">
+      <div class="panel-head"><h2>Mini bảng tuần hoàn</h2><span class="chip">5 nguyên tố • đúng vị trí nhóm/chu kỳ</span></div>
       <div id="ptable" class="ptable"></div>
       <div id="pdetail" class="pdetail hidden">
-        <div class="pd-sym" id="pdSym">H</div>
+        <div class="pd-illus" id="pdIllus"></div>
         <div class="pd-info">
           <h3 id="pdName">Hydrogen</h3>
           <p id="pdMeta">Z=1 • Nhóm 1 • Chu kỳ 1</p>
           <p id="pdFun" class="tiny"></p>
-          <button id="pdStudy" class="btn btn-primary ripple">Học nguyên tố này</button>
+          <button id="pdStudy" class="btn btn-primary">Học nguyên tố này →</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- QUIZ -->
+  <!-- ============ QUIZ ============ -->
   <section id="page-quiz" class="page">
-    <div class="panel glass">
+    <div class="panel">
       <div class="panel-head">
-        <h2>🎯 Luyện tập</h2>
+        <h2>Luyện tập</h2>
         <div class="chip-row">
           <span class="chip">Điểm: <b id="qScore">0</b></span>
-          <span class="chip combo hidden" id="qCombo">🔥 COMBO x2</span>
+          <span class="chip combo hidden" id="qCombo">COMBO x2</span>
           <span class="chip">Cao nhất: <b id="qBest">0</b></span>
         </div>
       </div>
       <div id="quizSetup">
-        <p class="tiny">10 câu / lượt • Đúng +10 • 5 câu liên tiếp COMBO • 10/10 PERFECT</p>
-        <button id="startQuiz" class="btn btn-primary btn-lg ripple">▶ Bắt đầu 10 câu</button>
+        <p class="tiny">10 câu / lượt • Đúng +10 • 5 câu liên tiếp có COMBO • 10/10 là PERFECT</p>
+        <button id="startQuiz" class="btn btn-primary btn-lg">Bắt đầu 10 câu →</button>
       </div>
       <div id="quizBox" class="hidden">
         <div class="progress"><div id="qBar"></div></div>
@@ -175,47 +205,47 @@
         <div id="qText" class="q-text"></div>
         <div id="qOpts" class="q-opts"></div>
         <div id="qFeed" class="q-feed"></div>
-        <button id="qNext" class="btn btn-primary hidden">Câu tiếp theo →</button>
+        <button id="quizNextBtn" class="btn btn-primary hidden">Câu tiếp theo →</button>
       </div>
-      <div id="quizEnd" class="hidden end">
-        <div class="big-score" id="qFinal">80</div>
-        <p id="qMsg"></p>
+      <div id="quizResult" class="hidden end">
+        <div class="score-big" id="quizScore">0</div>
+        <p id="quizMessage"></p>
         <div class="btn-row">
-          <button id="qRetry" class="btn btn-primary ripple">↺ Chơi lại</button>
-          <button class="btn btn-ghost ripple" data-nav="ranks">🏆 Xem thành tích</button>
+          <button id="quizRetryBtn" class="btn btn-primary">↺ Chơi lại</button>
+          <button class="btn btn-ghost" data-nav="ranks">Xem thành tích</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- RANKS -->
+  <!-- ============ RANKS ============ -->
   <section id="page-ranks" class="page">
-    <div class="panel glass">
-      <h2>🏆 Thành tích</h2>
+    <div class="panel">
+      <h2>Thành tích</h2>
       <div class="rank-grid" id="rankGrid"></div>
       <h3>Huy hiệu</h3>
       <div class="badge-grid" id="badgeGrid"></div>
     </div>
   </section>
 
-  <!-- ACCOUNT -->
+  <!-- ============ ACCOUNT ============ -->
   <section id="page-account" class="page">
-    <div class="panel glass account">
-      <h2>👤 Tài khoản</h2>
-      <p class="tiny">Demo client — lưu LocalStorage, không phải bảo mật thật.</p>
+    <div class="panel account">
+      <h2>Tài khoản</h2>
+      <p class="tiny">Bản demo — tài khoản chỉ lưu trên máy bạn, không phải bảo mật thật.</p>
       <div id="authForms">
         <div class="tabs"><button id="tLogin" class="tab active">Đăng nhập</button><button id="tReg" class="tab">Đăng ký</button></div>
-        <label>Tên</label><input id="aUser" maxlength="24" placeholder="vd: chem_pro" autocomplete="username">
+        <label>Tên</label><input id="aUser" maxlength="24" placeholder="vd: nha_hoa_hoc" autocomplete="username">
         <label>Mật khẩu</label><input id="aPass" type="password" placeholder="ít nhất 4 ký tự" autocomplete="current-password">
-        <div id="regExtra" class="hidden"><label>Xác nhận mật khẩu</label><input id="aPass2" type="password" placeholder="nhập lại mật khẩu"></div>
+        <div id="regExtra" class="hidden"><label>Nhập lại mật khẩu</label><input id="aPass2" type="password" placeholder="giống hệt ô trên"></div>
         <div id="aErr" class="err"></div>
         <button id="aGo" class="btn btn-primary" style="width:100%">Đăng nhập</button>
       </div>
       <div id="authInfo" class="hidden">
-        <div class="me"><span class="avatar">🧪</span><div><b id="meName">bạn</b><div class="tiny" id="meMeta"></div></div></div>
+        <div class="me"><span class="avatar">⚗</span><div><b id="meName">bạn</b><div class="tiny" id="meMeta"></div></div></div>
         <div class="rank-grid" id="meStats"></div>
         <div class="sound-row">
-          <label>🔊 Âm lượng</label>
+          <label>Âm lượng</label>
           <input id="vol" type="range" min="0" max="100" value="60">
           <button id="muteBtn" class="btn btn-ghost btn-sm">Tắt tiếng</button>
         </div>
@@ -225,13 +255,13 @@
   </section>
 
   <footer class="footer">
-    <b>CHEMFLASH</b> — Learn Chemistry. Discover Everything.<br>© 2026 CHEMFLASH • Made for Chemistry Learning
+    <b>CHEMFLASH</b> — Learn Chemistry. Discover Everything.<br>© 2026 CHEMFLASH • Vẽ và viết cho giờ Hóa thêm vui
   </footer>
 </main>
 
 <div id="confetti"></div>
 <div id="toasts"></div>
 
-<script src="script.js?v=2"></script>
+<script src="script.js?v=4"></script>
 </body>
 </html>
