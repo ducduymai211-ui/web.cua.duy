@@ -1,0 +1,14 @@
+$ echo "=== check IDs JS vs HTML ==="; $html = Get-Content -LiteralPath "index.html" -Raw; $ids = [regex]::Matches((Get-Content -LiteralPath "script.js" -Raw), '\$\("([^"]+)"\)') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique; foreach ($id in $ids) { if ($html -notmatch ('id="' + $id + '"')) { echo "MISSING: $id" } }; echo "check-done"; Get-ChildItem -LiteralPath "." -Include "*.html","*.css","*.js" | Select-Object Name, Length
+
+=== check IDs JS vs HTML ===
+check-done
+
+Name             Length
+----             ------
+index.html        12959
+README.md          1339
+script.js         28256
+style.css         18832
+yourname-sky.jpg 167212
+
+
